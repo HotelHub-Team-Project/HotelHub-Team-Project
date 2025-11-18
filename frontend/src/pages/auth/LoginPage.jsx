@@ -160,7 +160,7 @@ export default function LoginPage() {
             <div className="text-xs text-gray-600 space-y-1">
               <p>👤 일반 사용자: test2@gmail.com / 123456</p>
               <p>🏢 사업자: test1@gmail.com / 123456</p>
-              <p>🛠️ 관리자: happysun0142@gmail.com / love7942@</p>
+              <p>🛠️ 관리자: admin@test.com / 123456</p>
             </div>
           </div>
         </div>

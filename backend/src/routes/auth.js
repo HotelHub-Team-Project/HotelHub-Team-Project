@@ -37,15 +37,20 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
+    console.log('로그인 시도:', email);
 
     // 사용자 찾기
     const user = await User.findOne({ email });
     if (!user) {
+      console.log('사용자를 찾을 수 없음:', email);
       return res.status(401).json({ message: '이메일 또는 비밀번호가 잘못되었습니다.' });
     }
 
+    console.log('사용자 찾음:', user.email, '저장된 비밀번호:', user.password);
+
     // 비밀번호 확인
     const isMatch = await user.comparePassword(password);
+    console.log('비밀번호 일치 여부:', isMatch);
     if (!isMatch) {
       return res.status(401).json({ message: '이메일 또는 비밀번호가 잘못되었습니다.' });
     }

@@ -87,6 +87,13 @@ const seedUsers = async () => {
       role: 'admin'
     },
     {
+      email: 'admin@test.com',
+      password: '123456',
+      name: '테스트관리자',
+      phone: '010-0000-0001',
+      role: 'admin'
+    },
+    {
       email: 'test1@gmail.com',
       password: '123456',
       name: '서울호텔그룹',
@@ -128,7 +135,13 @@ const seedUsers = async () => {
     }
   ];
 
-  const createdUsers = await User.insertMany(users);
+  const createdUsers = [];
+  for (const userData of users) {
+    const user = new User(userData);
+    await user.save();
+    createdUsers.push(user);
+  }
+  
   console.log(`✅ ${createdUsers.length}명의 사용자 생성 완료`);
   return createdUsers;
 };
@@ -555,7 +568,8 @@ const seedDatabase = async () => {
     console.log(`   - 쿠폰: ${coupons.length}개\n`);
     
     console.log('🔐 테스트 계정:');
-    console.log('   관리자: happysun0142@gmail.com / love7942@');
+    console.log('   관리자1: happysun0142@gmail.com / love7942@');
+    console.log('   관리자2: admin@test.com / 123456');
     console.log('   사업자: test1@gmail.com / 123456');
     console.log('   사용자: test2@gmail.com / 123456\n');
     
