@@ -1,12 +1,13 @@
 import { Outlet, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { FaHotel, FaHeart, FaUser, FaSignOutAlt } from 'react-icons/fa';
+import Footer from '../components/Footer';
 
 export default function UserLayout() {
   const { user, logout } = useAuth();
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header */}
       <header className="bg-white shadow-sm">
         <div className="container mx-auto px-4">
@@ -31,7 +32,7 @@ export default function UserLayout() {
                       <FaUser />
                       <span>{user.name}</span>
                     </button>
-                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 hidden group-hover:block">
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 hidden group-hover:block z-50">
                       <Link to="/my-bookings" className="block px-4 py-2 hover:bg-gray-100">내 예약</Link>
                       <Link to="/favorites" className="block px-4 py-2 hover:bg-gray-100">찜 목록</Link>
                       <button onClick={logout} className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center space-x-2">
@@ -44,7 +45,7 @@ export default function UserLayout() {
               ) : (
                 <>
                   <Link to="/login" className="text-gray-700 hover:text-sage-600">로그인</Link>
-                  <Link to="/register" className="btn-primary">회원가입</Link>
+                  <Link to="/register" className="px-4 py-2 bg-sage-600 text-white rounded-lg hover:bg-sage-700">회원가입</Link>
                 </>
               )}
             </nav>
@@ -53,51 +54,12 @@ export default function UserLayout() {
       </header>
 
       {/* Main Content */}
-      <main>
+      <main className="flex-1">
         <Outlet />
       </main>
 
       {/* Footer */}
-      <footer className="bg-sage-900 text-white mt-16">
-        <div className="container mx-auto px-4 py-8">
-          <div className="grid grid-cols-4 gap-8">
-            <div>
-              <h3 className="font-bold mb-4">Go Anywhere</h3>
-              <ul className="space-y-2 text-sm text-gray-300">
-                <li>Careers</li>
-                <li>Investors</li>
-                <li>Affiliate</li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-bold mb-4">Our Activities</h3>
-              <ul className="space-y-2 text-sm text-gray-300">
-                <li>Guarantee</li>
-                <li>Legal Information</li>
-                <li>Privacy Policy</li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-bold mb-4">Travel Blog</h3>
-              <ul className="space-y-2 text-sm text-gray-300">
-                <li>Bali Travel Guide</li>
-                <li>Sri Lankan Travel Guide</li>
-                <li>Peru Travel Guide</li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-bold mb-4">About Us</h3>
-              <ul className="space-y-2 text-sm text-gray-300">
-                <li>Our Story</li>
-                <li>Work with us</li>
-              </ul>
-            </div>
-          </div>
-          <div className="mt-8 pt-8 border-t border-sage-700 text-center text-sm text-gray-300">
-            <p>© 2025 HotelHub. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

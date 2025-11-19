@@ -8,8 +8,17 @@ import SearchPage from './pages/user/SearchPage';
 import HotelDetailPage from './pages/user/HotelDetailPage';
 import BookingPage from './pages/user/BookingPage';
 import PaymentPage from './pages/user/PaymentPage';
+import PaymentSuccessPage from './pages/user/PaymentSuccessPage';
+import PaymentFailPage from './pages/user/PaymentFailPage';
 import MyBookingsPage from './pages/user/MyBookingsPage';
 import FavoritesPage from './pages/user/FavoritesPage';
+
+// Info Pages
+import AboutPage from './pages/info/AboutPage';
+import NoticePage from './pages/info/NoticePage';
+import FAQPage from './pages/info/FAQPage';
+import TermsPage from './pages/info/TermsPage';
+import PrivacyPage from './pages/info/PrivacyPage';
 
 // Business Pages
 import BusinessLayout from './layouts/BusinessLayout';
@@ -46,8 +55,17 @@ function App() {
         <Route path="hotels/:id" element={<HotelDetailPage />} />
         <Route path="booking/:roomId" element={<BookingPage />} />
         <Route path="payment/:bookingId" element={<PaymentPage />} />
+        <Route path="payment/success" element={<PaymentSuccessPage />} />
+        <Route path="payment/fail" element={<PaymentFailPage />} />
         <Route path="my-bookings" element={<MyBookingsPage />} />
         <Route path="favorites" element={<FavoritesPage />} />
+        
+        {/* Info Pages */}
+        <Route path="info/about" element={<AboutPage />} />
+        <Route path="info/notice" element={<NoticePage />} />
+        <Route path="info/faq" element={<FAQPage />} />
+        <Route path="info/terms" element={<TermsPage />} />
+        <Route path="info/privacy" element={<PrivacyPage />} />
       </Route>
 
       {/* Business Routes */}

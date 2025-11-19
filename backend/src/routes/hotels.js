@@ -17,7 +17,23 @@ router.get('/search', async (req, res) => {
       .populate('owner', 'name email')
       .sort('-rating');
 
-    res.json(hotels);
+    // 각 호텔의 최저가 정보 추가
+    const hotelsWithPrice = await Promise.all(
+      hotels.map(async (hotel) => {
+        const rooms = await Room.find({ 
+          hotel: hotel._id, 
+          status: 'available',
+          availableRooms: { $gt: 0 }
+        }).sort('price').limit(1);
+        
+        return {
+          ...hotel.toObject(),
+          minPrice: rooms.length > 0 ? rooms[0].price : 0
+        };
+      })
+    );
+
+    res.json(hotelsWithPrice);
   } catch (error) {
     res.status(500).json({ message: '호텔 검색 중 오류가 발생했습니다.' });
   }
@@ -49,7 +65,23 @@ router.get('/featured/list', async (req, res) => {
       .sort('-rating')
       .limit(8);
 
-    res.json(hotels);
+    // 각 호텔의 최저가 정보 추가
+    const hotelsWithPrice = await Promise.all(
+      hotels.map(async (hotel) => {
+        const rooms = await Room.find({ 
+          hotel: hotel._id, 
+          status: 'available',
+          availableRooms: { $gt: 0 }
+        }).sort('price').limit(1);
+        
+        return {
+          ...hotel.toObject(),
+          minPrice: rooms.length > 0 ? rooms[0].price : 0
+        };
+      })
+    );
+
+    res.json(hotelsWithPrice);
   } catch (error) {
     res.status(500).json({ message: '추천 호텔을 불러오는 중 오류가 발생했습니다.' });
   }

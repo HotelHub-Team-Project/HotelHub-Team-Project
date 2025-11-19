@@ -1,20 +1,26 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import api from '../../api/axios';
-import { FaStar, FaMapMarkerAlt, FaWifi, FaParking, FaSwimmingPool, FaHeart } from 'react-icons/fa';
+import { FaStar, FaMapMarkerAlt, FaWifi, FaParking, FaSwimmingPool, FaDumbbell, FaHeart } from 'react-icons/fa';
 
 export default function HotelDetailPage() {
   const { id } = useParams();
+  const { user } = useAuth();
   const [hotel, setHotel] = useState(null);
   const [rooms, setRooms] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [selectedImage, setSelectedImage] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [isFavorite, setIsFavorite] = useState(false);
 
   useEffect(() => {
     loadHotelDetails();
     loadReviews();
-  }, [id]);
+    if (user) {
+      checkFavoriteStatus();
+    }
+  }, [id, user]);
 
   const loadHotelDetails = async () => {
     try {
@@ -35,6 +41,29 @@ export default function HotelDetailPage() {
       setReviews(response.data);
     } catch (error) {
       console.error('Failed to load reviews:', error);
+    }
+  };
+
+  const checkFavoriteStatus = async () => {
+    try {
+      const response = await api.get('/users/me');
+      setIsFavorite(response.data.favorites?.some(fav => fav._id === id || fav === id));
+    } catch (error) {
+      console.error('Failed to check favorite status:', error);
+    }
+  };
+
+  const toggleFavorite = async () => {
+    if (!user) {
+      alert('로그인이 필요합니다.');
+      return;
+    }
+
+    try {
+      await api.post(`/users/favorites/${id}`);
+      setIsFavorite(!isFavorite);
+    } catch (error) {
+      alert('찜 목록 업데이트 중 오류가 발생했습니다.');
     }
   };
 
@@ -89,9 +118,16 @@ export default function HotelDetailPage() {
             ₩{((rooms[0]?.price || 200000)).toLocaleString()}
           </div>
           <div className="text-gray-600">/night</div>
-          <button className="mt-4 px-6 py-2 bg-white border-2 border-sage-500 text-sage-600 rounded-lg hover:bg-sage-50 flex items-center space-x-2">
-            <FaHeart />
-            <span>Save</span>
+          <button 
+            onClick={toggleFavorite}
+            className={`mt-4 px-6 py-2 border-2 rounded-lg flex items-center space-x-2 transition-colors ${
+              isFavorite
+                ? 'bg-red-50 border-red-500 text-red-600 hover:bg-red-100'
+                : 'bg-white border-sage-500 text-sage-600 hover:bg-sage-50'
+            }`}
+          >
+            <FaHeart className={isFavorite ? 'fill-current' : ''} />
+            <span>{isFavorite ? '찜 해제' : '찜하기'}</span>
           </button>
         </div>
       </div>
