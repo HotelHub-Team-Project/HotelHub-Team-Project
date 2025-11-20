@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import api from '../../api/axios';
-import { FaStar, FaMapMarkerAlt, FaWifi, FaParking, FaSwimmingPool } from 'react-icons/fa';
+import { FaStar, FaMapMarkerAlt, FaWifi, FaParking, FaSwimmingPool, FaHeart } from 'react-icons/fa';
 
 export default function SearchPage() {
+  const { user } = useAuth();
   const [searchParams] = useSearchParams();
   const [hotels, setHotels] = useState([]);
+  const [favorites, setFavorites] = useState([]);
   const [filters, setFilters] = useState({
     priceRange: [0, 500000],
     rating: 0,
@@ -15,8 +18,11 @@ export default function SearchPage() {
 
   useEffect(() => {
     searchHotels();
+    if (user) {
+      loadFavorites();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams]);
+  }, [searchParams, user]);
 
   const searchHotels = async () => {
     try {
@@ -37,6 +43,40 @@ export default function SearchPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const loadFavorites = async () => {
+    try {
+      const response = await api.get('/users/me');
+      setFavorites(response.data.favorites || []);
+    } catch (error) {
+      console.error('Failed to load favorites:', error);
+    }
+  };
+
+  const toggleFavorite = async (hotelId, e) => {
+    e.preventDefault();
+    
+    if (!user) {
+      alert('로그인이 필요합니다.');
+      return;
+    }
+
+    try {
+      await api.post(`/users/favorites/${hotelId}`);
+      const isFavorite = favorites.some(fav => fav._id === hotelId || fav === hotelId);
+      if (isFavorite) {
+        setFavorites(favorites.filter(fav => fav._id !== hotelId && fav !== hotelId));
+      } else {
+        setFavorites([...favorites, hotelId]);
+      }
+    } catch (error) {
+      alert('찜 목록 업데이트 중 오류가 발생했습니다.');
+    }
+  };
+
+  const isFavorite = (hotelId) => {
+    return favorites.some(fav => fav._id === hotelId || fav === hotelId);
   };
 
   const filteredHotels = hotels.filter(hotel => {
@@ -134,11 +174,19 @@ export default function SearchPage() {
                   to={`/hotels/${hotel._id}`}
                   className="bg-white rounded-lg shadow-md overflow-hidden flex hover:shadow-lg transition-shadow"
                 >
-                  <img
-                    src={hotel.images?.[0] || '/placeholder-hotel.jpg'}
-                    alt={hotel.name}
-                    className="w-64 h-48 object-cover"
-                  />
+                  <div className="relative">
+                    <img
+                      src={hotel.images?.[0] || '/placeholder-hotel.jpg'}
+                      alt={hotel.name}
+                      className="w-64 h-48 object-cover"
+                    />
+                    <button
+                      onClick={(e) => toggleFavorite(hotel._id, e)}
+                      className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-lg hover:bg-gray-100 transition-colors z-10"
+                    >
+                      <FaHeart className={isFavorite(hotel._id) ? 'text-red-500' : 'text-gray-400'} />
+                    </button>
+                  </div>
                   
                   <div className="flex-1 p-6">
                     <div className="flex items-start justify-between">

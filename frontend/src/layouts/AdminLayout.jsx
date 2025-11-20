@@ -2,7 +2,7 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { 
   FaChartBar, FaUsers, FaHotel, FaExclamationTriangle, 
-  FaTicketAlt, FaCog, FaSignOutAlt 
+  FaTicketAlt, FaCog, FaSignOutAlt, FaHome 
 } from 'react-icons/fa';
 
 export default function AdminLayout() {
@@ -27,6 +27,14 @@ export default function AdminLayout() {
             <FaCog className="text-2xl" />
             <span className="text-xl font-bold">관리자 대시보드</span>
           </div>
+
+          <Link
+            to="/"
+            className="flex items-center justify-center space-x-2 px-4 py-2 mb-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+          >
+            <FaHome />
+            <span>홈페이지로 이동</span>
+          </Link>
 
           <nav className="space-y-2">
             {menuItems.map((item) => {

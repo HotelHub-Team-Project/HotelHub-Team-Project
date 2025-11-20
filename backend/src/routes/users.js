@@ -79,4 +79,41 @@ router.post('/favorites/:hotelId', authenticate, async (req, res) => {
   }
 });
 
+// 회원탈퇴
+router.delete('/me', authenticate, async (req, res) => {
+  try {
+    const { password } = req.body;
+
+    // 비밀번호 확인
+    const user = await User.findById(req.user._id);
+    const isMatch = await user.comparePassword(password);
+
+    if (!isMatch) {
+      return res.status(400).json({ message: '비밀번호가 일치하지 않습니다.' });
+    }
+
+    // 진행 중인 예약 확인
+    const Booking = require('../models/Booking');
+    const activeBookings = await Booking.countDocuments({
+      user: req.user._id,
+      bookingStatus: 'confirmed',
+      checkOut: { $gte: new Date() }
+    });
+
+    if (activeBookings > 0) {
+      return res.status(400).json({ 
+        message: '진행 중인 예약이 있어 탈퇴할 수 없습니다. 예약을 취소하거나 체크아웃 후 탈퇴해주세요.' 
+      });
+    }
+
+    // 회원 삭제
+    await User.findByIdAndDelete(req.user._id);
+
+    res.json({ message: '회원탈퇴가 완료되었습니다.' });
+  } catch (error) {
+    console.error('Delete user error:', error);
+    res.status(500).json({ message: '회원탈퇴 중 오류가 발생했습니다.' });
+  }
+});
+
 module.exports = router;

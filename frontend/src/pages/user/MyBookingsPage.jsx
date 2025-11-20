@@ -154,7 +154,7 @@ export default function MyBookingsPage() {
 
                     <div className="flex space-x-3">
                       <Link
-                        to={`/hotels/${booking.hotel._id}`}
+                        to={`/hotels/${booking.hotel?._id || booking.hotel}`}
                         className="px-4 py-2 border border-sage-500 text-sage-600 rounded-lg hover:bg-sage-50"
                       >
                         상세보기

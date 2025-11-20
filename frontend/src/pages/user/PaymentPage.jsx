@@ -31,14 +31,23 @@ export default function PaymentPage() {
   };
 
   const handlePayment = async () => {
+    if (!booking) {
+      alert('예약 정보를 찾을 수 없습니다.');
+      return;
+    }
+
     try {
       const tossPayments = await loadTossPayments(import.meta.env.VITE_TOSS_CLIENT_KEY);
 
+      const hotelName = booking.hotel?.name || '호텔';
+      const roomName = booking.room?.name || '객실';
+      const userName = booking.user?.name || '고객';
+
       await tossPayments.requestPayment(paymentMethod, {
         amount: booking.finalPrice,
-        orderId: booking.tossOrderId,
-        orderName: `${booking.hotel.name} - ${booking.room.name}`,
-        customerName: booking.user.name,
+        orderId: booking.tossOrderId || `ORDER_${booking._id}`,
+        orderName: `${hotelName} - ${roomName}`,
+        customerName: userName,
         successUrl: `${window.location.origin}/payment/success`,
         failUrl: `${window.location.origin}/payment/fail`,
       });

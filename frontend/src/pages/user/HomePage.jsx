@@ -22,6 +22,11 @@ export default function HomePage() {
     checkOut: '',
     guests: 2
   });
+  const [newsletter, setNewsletter] = useState({
+    email: '',
+    loading: false,
+    message: ''
+  });
 
   useEffect(() => {
     loadFeaturedHotels();
@@ -206,14 +211,23 @@ export default function HomePage() {
             
             <div className="col-span-7 grid grid-cols-2 gap-4">
               {featuredHotels.slice(4, 8).map((hotel, idx) => (
-                <div key={idx} className="relative h-48 rounded-lg overflow-hidden group cursor-pointer">
+                <Link
+                  key={hotel._id || idx}
+                  to={`/hotels/${hotel._id}`}
+                  className="relative h-48 rounded-lg overflow-hidden group cursor-pointer"
+                >
                   <img
                     src={hotel.images?.[0] || '/placeholder-hotel.jpg'}
                     alt={hotel.name}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                   />
-                  <div className="absolute inset-0 bg-black bg-opacity-30 group-hover:bg-opacity-40 transition-opacity"></div>
-                </div>
+                  <div className="absolute inset-0 bg-black bg-opacity-30 group-hover:bg-opacity-40 transition-opacity flex items-end">
+                    <div className="p-4 w-full">
+                      <h4 className="text-white font-bold text-lg">{hotel.name}</h4>
+                      <p className="text-white text-sm opacity-90">{hotel.location?.city}</p>
+                    </div>
+                  </div>
+                </Link>
               ))}
             </div>
           </div>

@@ -56,14 +56,31 @@ export default function BookingPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    if (!bookingData.checkIn || !bookingData.checkOut) {
+      alert('체크인 및 체크아웃 날짜를 선택해주세요.');
+      return;
+    }
+
+    const checkIn = new Date(bookingData.checkIn);
+    const checkOut = new Date(bookingData.checkOut);
+    
+    if (checkOut <= checkIn) {
+      alert('체크아웃 날짜는 체크인 날짜보다 늦어야 합니다.');
+      return;
+    }
+    
     try {
+      const hotelId = typeof hotel === 'object' ? hotel._id : hotel;
+      
       const response = await api.post('/bookings', {
-        roomId: room._id,
+        hotel: hotelId,
+        room: room._id,
         checkIn: bookingData.checkIn,
         checkOut: bookingData.checkOut,
         guests: bookingData.guests,
         specialRequests: bookingData.specialRequests,
-        usedPoints: 0
+        totalPrice: calculateTotalPrice(),
+        finalPrice: calculateTotalPrice()
       });
 
       navigate(`/payment/${response.data._id}`);

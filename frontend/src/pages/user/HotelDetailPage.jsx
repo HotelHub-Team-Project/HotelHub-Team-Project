@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../api/axios';
-import { FaStar, FaMapMarkerAlt, FaWifi, FaParking, FaSwimmingPool, FaDumbbell, FaHeart } from 'react-icons/fa';
+import { FaStar, FaMapMarkerAlt, FaWifi, FaParking, FaSwimmingPool, FaDumbbell, FaHeart, FaEdit, FaTrash, FaTimes, FaFlag } from 'react-icons/fa';
 
 export default function HotelDetailPage() {
   const { id } = useParams();
@@ -13,6 +13,10 @@ export default function HotelDetailPage() {
   const [selectedImage, setSelectedImage] = useState(0);
   const [loading, setLoading] = useState(true);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [editingReview, setEditingReview] = useState(null);
+  const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '' });
+  const [showAllReviews, setShowAllReviews] = useState(false);
 
   useEffect(() => {
     loadHotelDetails();
@@ -70,6 +74,83 @@ export default function HotelDetailPage() {
       setIsFavorite(!isFavorite);
     } catch (error) {
       alert('찜 목록 업데이트 중 오류가 발생했습니다.');
+    }
+  };
+
+  const handleOpenReviewModal = (review = null) => {
+    if (!user) {
+      alert('로그인이 필요합니다.');
+      return;
+    }
+
+    if (review) {
+      setEditingReview(review);
+      setReviewForm({ rating: review.rating, comment: review.comment });
+    } else {
+      setEditingReview(null);
+      setReviewForm({ rating: 5, comment: '' });
+    }
+    setShowReviewModal(true);
+  };
+
+  const handleCloseReviewModal = () => {
+    setShowReviewModal(false);
+    setEditingReview(null);
+    setReviewForm({ rating: 5, comment: '' });
+  };
+
+  const handleSubmitReview = async (e) => {
+    e.preventDefault();
+
+    if (!reviewForm.comment.trim()) {
+      alert('리뷰 내용을 입력해주세요.');
+      return;
+    }
+
+    try {
+      if (editingReview) {
+        await api.put(`/reviews/${editingReview._id}`, reviewForm);
+        alert('리뷰가 수정되었습니다.');
+      } else {
+        await api.post('/reviews', {
+          hotel: id,
+          ...reviewForm
+        });
+        alert('리뷰가 등록되었습니다.');
+      }
+      handleCloseReviewModal();
+      loadReviews();
+      loadHotelDetails();
+    } catch (error) {
+      console.error('Failed to submit review:', error);
+      alert(error.response?.data?.message || '리뷰 저장 중 오류가 발생했습니다.');
+    }
+  };
+
+  const handleDeleteReview = async (reviewId) => {
+    if (!confirm('정말 삭제하시겠습니까?')) return;
+
+    try {
+      await api.delete(`/reviews/${reviewId}`);
+      alert('리뷰가 삭제되었습니다.');
+      loadReviews();
+      loadHotelDetails();
+    } catch (error) {
+      console.error('Failed to delete review:', error);
+      alert('리뷰 삭제 중 오류가 발생했습니다.');
+    }
+  };
+
+  const handleReportReview = async (reviewId) => {
+    const reason = prompt('신고 사유를 입력해주세요:');
+    if (!reason) return;
+
+    try {
+      await api.post(`/reviews/${reviewId}/report`, { reason });
+      alert('리뷰가 신고되었습니다.');
+    } catch (error) {
+      console.error('Failed to report review:', error);
+      alert('리뷰 신고 중 오류가 발생했습니다.');
     }
   };
 
@@ -245,12 +326,17 @@ export default function HotelDetailPage() {
       {/* Reviews */}
       <section>
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold">Reviews</h2>
-          <button className="text-sage-600 hover:text-sage-700">Write a Review</button>
+          <h2 className="text-2xl font-bold">리뷰 ({reviews.length})</h2>
+          <button 
+            onClick={() => handleOpenReviewModal()}
+            className="px-6 py-2 bg-sage-500 text-white rounded-lg hover:bg-sage-600"
+          >
+            리뷰 작성
+          </button>
         </div>
 
         <div className="space-y-6">
-          {reviews.slice(0, 3).map((review) => (
+          {(showAllReviews ? reviews : reviews.slice(0, 3)).map((review) => (
             <div key={review._id} className="bg-white border rounded-lg p-6">
               <div className="flex items-start justify-between mb-4">
                 <div>
@@ -261,23 +347,140 @@ export default function HotelDetailPage() {
                     ))}
                   </div>
                 </div>
-                <span className="text-sm text-gray-500">
-                  {new Date(review.createdAt).toLocaleDateString()}
-                </span>
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm text-gray-500">
+                    {new Date(review.createdAt).toLocaleDateString()}
+                  </span>
+                  {user && user._id === review.user?._id && (
+                    <div className="flex space-x-2 ml-4">
+                      <button
+                        onClick={() => handleOpenReviewModal(review)}
+                        className="text-indigo-600 hover:text-indigo-700"
+                        title="수정"
+                      >
+                        <FaEdit />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteReview(review._id)}
+                        className="text-red-600 hover:text-red-700"
+                        title="삭제"
+                      >
+                        <FaTrash />
+                      </button>
+                    </div>
+                  )}
+                  {user && user._id !== review.user?._id && (
+                    <button
+                      onClick={() => handleReportReview(review._id)}
+                      className="text-gray-500 hover:text-red-600 ml-4"
+                      title="신고"
+                    >
+                      <FaFlag />
+                    </button>
+                  )}
+                </div>
               </div>
               <p className="text-gray-700">{review.comment}</p>
             </div>
           ))}
         </div>
 
+        {reviews.length === 0 && (
+          <div className="bg-gray-50 rounded-lg p-12 text-center">
+            <p className="text-gray-600 mb-4">아직 작성된 리뷰가 없습니다.</p>
+            <button
+              onClick={() => handleOpenReviewModal()}
+              className="px-6 py-2 bg-sage-500 text-white rounded-lg hover:bg-sage-600"
+            >
+              첫 리뷰 작성하기
+            </button>
+          </div>
+        )}
+
         {reviews.length > 3 && (
           <div className="text-center mt-6">
-            <button className="px-6 py-2 border border-sage-500 text-sage-600 rounded-lg hover:bg-sage-50">
-              Load More
+            <button
+              onClick={() => setShowAllReviews(!showAllReviews)}
+              className="px-6 py-2 border border-sage-500 text-sage-600 rounded-lg hover:bg-sage-50"
+            >
+              {showAllReviews ? '접기' : `모든 리뷰 보기 (${reviews.length})`}
             </button>
           </div>
         )}
       </section>
+
+      {/* 리뷰 작성/수정 모달 */}
+      {showReviewModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-2xl w-full">
+            <div className="border-b px-6 py-4 flex items-center justify-between">
+              <h2 className="text-2xl font-bold">
+                {editingReview ? '리뷰 수정' : '리뷰 작성'}
+              </h2>
+              <button onClick={handleCloseReviewModal} className="text-gray-500 hover:text-gray-700">
+                <FaTimes size={24} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmitReview} className="p-6 space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  별점 <span className="text-red-500">*</span>
+                </label>
+                <div className="flex items-center space-x-2">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setReviewForm({ ...reviewForm, rating: star })}
+                      className="focus:outline-none"
+                    >
+                      <FaStar
+                        size={32}
+                        className={star <= reviewForm.rating ? 'text-yellow-400' : 'text-gray-300'}
+                      />
+                    </button>
+                  ))}
+                  <span className="ml-4 text-lg font-semibold">{reviewForm.rating}점</span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  리뷰 내용 <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  value={reviewForm.comment}
+                  onChange={(e) => setReviewForm({ ...reviewForm, comment: e.target.value })}
+                  rows={6}
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-sage-500"
+                  placeholder="이 호텔에 대한 솔직한 리뷰를 남겨주세요..."
+                  required
+                />
+                <p className="text-sm text-gray-500 mt-1">
+                  {reviewForm.comment.length} / 500자
+                </p>
+              </div>
+
+              <div className="flex justify-end space-x-4">
+                <button
+                  type="button"
+                  onClick={handleCloseReviewModal}
+                  className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                >
+                  취소
+                </button>
+                <button
+                  type="submit"
+                  className="px-6 py-2 bg-sage-500 text-white rounded-lg hover:bg-sage-600"
+                >
+                  {editingReview ? '수정하기' : '등록하기'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

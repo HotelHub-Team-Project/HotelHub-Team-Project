@@ -4,6 +4,7 @@ import { useAuth } from './context/AuthContext';
 // User Pages
 import UserLayout from './layouts/UserLayout';
 import HomePage from './pages/user/HomePage';
+import Dashboard from './pages/user/Dashboard';
 import SearchPage from './pages/user/SearchPage';
 import HotelDetailPage from './pages/user/HotelDetailPage';
 import BookingPage from './pages/user/BookingPage';
@@ -12,6 +13,7 @@ import PaymentSuccessPage from './pages/user/PaymentSuccessPage';
 import PaymentFailPage from './pages/user/PaymentFailPage';
 import MyBookingsPage from './pages/user/MyBookingsPage';
 import FavoritesPage from './pages/user/FavoritesPage';
+import SettingsPage from './pages/user/SettingsPage';
 
 // Info Pages
 import AboutPage from './pages/info/AboutPage';
@@ -27,6 +29,7 @@ import HotelManagement from './pages/business/HotelManagement';
 import RoomManagement from './pages/business/RoomManagement';
 import BookingManagement from './pages/business/BookingManagement';
 import ReviewManagement from './pages/business/ReviewManagement';
+import BusinessSettingsPage from './pages/business/SettingsPage';
 
 // Admin Pages
 import AdminLayout from './layouts/AdminLayout';
@@ -51,6 +54,7 @@ function App() {
       {/* User Routes */}
       <Route path="/" element={<UserLayout />}>
         <Route index element={<HomePage />} />
+        <Route path="dashboard" element={<Dashboard />} />
         <Route path="search" element={<SearchPage />} />
         <Route path="hotels/:id" element={<HotelDetailPage />} />
         <Route path="booking/:roomId" element={<BookingPage />} />
@@ -59,6 +63,7 @@ function App() {
         <Route path="payment/fail" element={<PaymentFailPage />} />
         <Route path="my-bookings" element={<MyBookingsPage />} />
         <Route path="favorites" element={<FavoritesPage />} />
+        <Route path="settings" element={<SettingsPage />} />
         
         {/* Info Pages */}
         <Route path="info/about" element={<AboutPage />} />
@@ -75,6 +80,7 @@ function App() {
         <Route path="rooms" element={<RoomManagement />} />
         <Route path="bookings" element={<BookingManagement />} />
         <Route path="reviews" element={<ReviewManagement />} />
+        <Route path="settings" element={<BusinessSettingsPage />} />
       </Route>
 
       {/* Admin Routes */}
@@ -94,11 +100,38 @@ function App() {
 function ProtectedRoute({ children, role }) {
   const { user, loading } = useAuth();
 
-  if (loading) return <div className="flex items-center justify-center min-h-screen">로딩중...</div>;
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sage-500"></div>
+      </div>
+    );
+  }
   
-  if (!user) return <Navigate to="/login" replace />;
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
   
-  if (role && user.role !== role) return <Navigate to="/" replace />;
+  if (role && user.role !== role) {
+    return <Navigate to="/" replace />;
+  }
+
+  // 사업자 승인 상태 체크
+  if (role === 'business' && user.businessStatus !== 'approved') {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-4">승인 대기 중</h2>
+          <p className="text-gray-600 mb-4">
+            사업자 계정 승인을 기다리고 있습니다.
+          </p>
+          <p className="text-sm text-gray-500">
+            관리자 승인 후 이용 가능합니다.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return children;
 }

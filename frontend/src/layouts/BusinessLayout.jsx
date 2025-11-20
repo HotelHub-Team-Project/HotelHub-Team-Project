@@ -1,6 +1,6 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { FaHotel, FaBed, FaCalendar, FaStar, FaSignOutAlt, FaChartBar } from 'react-icons/fa';
+import { FaHotel, FaBed, FaCalendar, FaStar, FaSignOutAlt, FaChartBar, FaCog, FaHome } from 'react-icons/fa';
 
 export default function BusinessLayout() {
   const { user, logout } = useAuth();
@@ -12,6 +12,7 @@ export default function BusinessLayout() {
     { path: '/business/rooms', label: '객실 관리', icon: FaBed },
     { path: '/business/bookings', label: '예약 관리', icon: FaCalendar },
     { path: '/business/reviews', label: '리뷰 관리', icon: FaStar },
+    { path: '/business/settings', label: '계정 설정', icon: FaCog },
   ];
 
   return (
@@ -23,6 +24,14 @@ export default function BusinessLayout() {
             <FaHotel className="text-2xl" />
             <span className="text-xl font-bold">Hotel Admin</span>
           </div>
+
+          <Link
+            to="/"
+            className="flex items-center justify-center space-x-2 px-4 py-2 mb-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+          >
+            <FaHome />
+            <span>홈페이지로 이동</span>
+          </Link>
 
           <nav className="space-y-2">
             {menuItems.map((item) => {

@@ -8,35 +8,40 @@ const { authenticate } = require('../middleware/auth');
 // 예약 생성
 router.post('/', authenticate, async (req, res) => {
   try {
-    const { roomId, checkIn, checkOut, guests, usedCoupons, usedPoints, specialRequests } = req.body;
+    const { hotel, room, checkIn, checkOut, guests, usedCoupons, usedPoints, specialRequests, totalPrice, finalPrice } = req.body;
 
     // 객실 확인
-    const room = await Room.findById(roomId).populate('hotel');
-    if (!room || room.availableRooms < 1) {
+    const roomData = await Room.findById(room).populate('hotel');
+    if (!roomData || roomData.availableRooms < 1) {
       return res.status(400).json({ message: '예약 가능한 객실이 없습니다.' });
     }
 
-    // 날짜 계산
-    const nights = Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24));
-    const totalPrice = room.price * nights;
+    // 날짜 유효성 검사
+    const checkInDate = new Date(checkIn);
+    const checkOutDate = new Date(checkOut);
+    
+    if (checkOutDate <= checkInDate) {
+      return res.status(400).json({ message: '체크아웃 날짜는 체크인 날짜보다 늦어야 합니다.' });
+    }
 
-    // 할인 계산
-    let discountAmount = usedPoints || 0;
-    const finalPrice = totalPrice - discountAmount;
+    // 가격 계산 (프론트엔드에서 전달받거나 재계산)
+    const nights = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
+    const calculatedPrice = totalPrice || (roomData.price * nights);
+    const calculatedFinal = finalPrice || calculatedPrice;
 
     // 예약 생성
     const booking = new Booking({
       user: req.user._id,
-      hotel: room.hotel._id,
-      room: roomId,
-      checkIn,
-      checkOut,
-      guests,
-      totalPrice,
-      discountAmount,
-      finalPrice,
-      usedCoupons,
-      usedPoints,
+      hotel: hotel || roomData.hotel._id,
+      room: room,
+      checkIn: checkInDate,
+      checkOut: checkOutDate,
+      guests: guests || { adults: 2, children: 0 },
+      totalPrice: calculatedPrice,
+      discountAmount: usedPoints || 0,
+      finalPrice: calculatedFinal,
+      usedCoupons: usedCoupons || [],
+      usedPoints: usedPoints || 0,
       specialRequests: specialRequests || '',
       tossOrderId: `ORDER_${Date.now()}_${req.user._id}`
     });
@@ -44,8 +49,8 @@ router.post('/', authenticate, async (req, res) => {
     await booking.save();
 
     // 객실 재고 감소
-    room.availableRooms -= 1;
-    await room.save();
+    roomData.availableRooms -= 1;
+    await roomData.save();
 
     res.status(201).json(booking);
   } catch (error) {

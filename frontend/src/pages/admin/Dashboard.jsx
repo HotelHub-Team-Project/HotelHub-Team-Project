@@ -28,7 +28,7 @@ export default function AdminDashboard() {
             <div>
               <p className="text-gray-600 text-sm mb-1">총 예약</p>
               <h3 className="text-3xl font-bold text-indigo-600">
-                {stats?.totalBookings || 15}
+                {stats?.totalBookings || 0}
               </h3>
             </div>
             <FaCalendar className="text-4xl text-indigo-600" />
@@ -40,7 +40,7 @@ export default function AdminDashboard() {
             <div>
               <p className="text-gray-600 text-sm mb-1">총 매출</p>
               <h3 className="text-3xl font-bold text-green-600">
-                ₩{(stats?.totalRevenue || 12500000).toLocaleString()}
+                ₩{(stats?.totalRevenue || 0).toLocaleString()}
               </h3>
             </div>
             <FaChartLine className="text-4xl text-green-600" />
@@ -52,7 +52,7 @@ export default function AdminDashboard() {
             <div>
               <p className="text-gray-600 text-sm mb-1">사업자 수</p>
               <h3 className="text-3xl font-bold text-purple-600">
-                {stats?.totalBusiness || 45}
+                {stats?.totalBusiness || 0}
               </h3>
             </div>
             <FaUsers className="text-4xl text-purple-600" />
@@ -64,7 +64,7 @@ export default function AdminDashboard() {
             <div>
               <p className="text-gray-600 text-sm mb-1">호텔 수</p>
               <h3 className="text-3xl font-bold text-yellow-600">
-                {stats?.totalHotels || 8}
+                {stats?.totalHotels || 0}
               </h3>
             </div>
             <FaHotel className="text-4xl text-yellow-600" />
