@@ -84,10 +84,10 @@ export default function HomePage() {
         
         <div className="relative container mx-auto px-4 h-full flex flex-col justify-center z-10">
           <h1 className="text-5xl font-bold mb-4">
-            부산스 호텔 리 다이하겠<br />
+            플러스 호텔 및 다양한<br />
             숙소를 확인하세요
           </h1>
-          <p className="text-xl mb-8">오프라인 셀프 체크인을 통해 보다 편리하게 24시 체크인 가능</p>
+          <p className="text-xl mb-8">검색을 통해 요금을 비교하고 무료 취소를 포함한 특가도 확인하세요!</p>
           
           {/* Search Box */}
           <div className="bg-white rounded-lg shadow-2xl p-8 max-w-6xl mx-auto">
