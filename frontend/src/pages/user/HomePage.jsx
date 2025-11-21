@@ -42,10 +42,59 @@ export default function HomePage() {
   const loadFeaturedHotels = async () => {
     try {
       const response = await api.get('/hotels/featured/list');
-      setFeaturedHotels(response.data);
+      setFeaturedHotels(response.data || []);
     } catch (error) {
       console.error('Failed to load hotels:', error);
       setFeaturedHotels([]);
+    }
+  };
+
+  const handleNewsletterSubscribe = async (e) => {
+    e.preventDefault();
+    
+    if (!newsletter.email) {
+      setNewsletter({ ...newsletter, message: '이메일을 입력해주세요.' });
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(newsletter.email)) {
+      setNewsletter({ ...newsletter, message: '올바른 이메일 형식을 입력해주세요.' });
+      return;
+    }
+
+    setNewsletter({ ...newsletter, loading: true, message: '' });
+
+    try {
+      const subscriptions = JSON.parse(localStorage.getItem('newsletterSubscriptions') || '[]');
+      
+      if (subscriptions.includes(newsletter.email)) {
+        setNewsletter({ 
+          email: newsletter.email,
+          loading: false, 
+          message: '이미 구독 중인 이메일입니다.' 
+        });
+        return;
+      }
+
+      subscriptions.push(newsletter.email);
+      localStorage.setItem('newsletterSubscriptions', JSON.stringify(subscriptions));
+
+      setNewsletter({ 
+        email: '',
+        loading: false, 
+        message: '구독이 완료되었습니다! 매일 아침 5:30에 여행 뉴스를 받아보실 수 있습니다.' 
+      });
+
+      setTimeout(() => {
+        setNewsletter(prev => ({ ...prev, message: '' }));
+      }, 3000);
+    } catch (error) {
+      setNewsletter({ 
+        ...newsletter,
+        loading: false, 
+        message: '구독 중 오류가 발생했습니다.' 
+      });
     }
   };
 
@@ -192,39 +241,81 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Travel Tips Section */}
+      {/* Popular Destinations Section */}
       <section className="bg-sage-50 py-16">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold mb-8">여행 더보기</h2>
+          <h2 className="text-3xl font-bold mb-2">인기 여행지</h2>
+          <p className="text-gray-600 mb-8">많은 분들이 찾는 인기 호텔을 지역별로 만나보세요</p>
           
           <div className="grid grid-cols-12 gap-6">
-            <div className="col-span-5 bg-sage-100 p-8 rounded-lg">
-              <h3 className="text-2xl font-bold mb-4">알리가 투어</h3>
-              <p className="text-gray-700 mb-6">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit, 
-                sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-              </p>
-              <button className="px-6 py-3 bg-white text-sage-700 rounded-lg hover:bg-gray-50">
-                Show Detail
-              </button>
+            {/* 왼쪽 하이라이트 호텔 */}
+            <div className="col-span-5 bg-white rounded-lg shadow-md overflow-hidden group">
+              {featuredHotels[4] && (
+                <Link to={`/hotels/${featuredHotels[4]._id}`} className="block">
+                  <div className="relative h-64 overflow-hidden">
+                    <img
+                      src={featuredHotels[4].images?.[0] || '/placeholder-hotel.jpg'}
+                      alt={featuredHotels[4].name}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                    />
+                    <div className="absolute top-4 left-4 bg-yellow-500 text-white px-4 py-2 rounded-full text-sm font-bold">
+                      ⭐ 추천 호텔
+                    </div>
+                  </div>
+                  <div className="p-6">
+                    <h3 className="text-2xl font-bold mb-2">{featuredHotels[4].name}</h3>
+                    <p className="text-gray-600 mb-4 flex items-center">
+                      <FaMapMarkerAlt className="mr-2" />
+                      {featuredHotels[4].location?.city} · {featuredHotels[4].location?.district}
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center text-yellow-500">
+                        <FaStar className="mr-1" />
+                        <span className="font-bold text-lg">{featuredHotels[4].rating?.toFixed(1) || '4.5'}</span>
+                        <span className="text-gray-500 text-sm ml-1">(후기)</span>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm text-gray-500">1박 기준</div>
+                        <div className="text-2xl font-bold text-sage-600">
+                          ₩{(featuredHotels[4].minPrice || 180000).toLocaleString()}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              )}
             </div>
             
+            {/* 오른쪽 호텔 그리드 */}
             <div className="col-span-7 grid grid-cols-2 gap-4">
-              {featuredHotels.slice(4, 8).map((hotel, idx) => (
+              {featuredHotels.slice(5, 9).map((hotel, idx) => (
                 <Link
                   key={hotel._id || idx}
                   to={`/hotels/${hotel._id}`}
-                  className="relative h-48 rounded-lg overflow-hidden group cursor-pointer"
+                  className="relative h-48 rounded-lg overflow-hidden group cursor-pointer shadow-md"
                 >
                   <img
                     src={hotel.images?.[0] || '/placeholder-hotel.jpg'}
                     alt={hotel.name}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                   />
-                  <div className="absolute inset-0 bg-black bg-opacity-30 group-hover:bg-opacity-40 transition-opacity flex items-end">
-                    <div className="p-4 w-full">
-                      <h4 className="text-white font-bold text-lg">{hotel.name}</h4>
-                      <p className="text-white text-sm opacity-90">{hotel.location?.city}</p>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent group-hover:from-black/80 transition-all">
+                    <div className="absolute bottom-0 left-0 right-0 p-4">
+                      <h4 className="text-white font-bold text-lg mb-1">{hotel.name}</h4>
+                      <p className="text-white text-sm opacity-90 mb-2">
+                        📍 {hotel.location?.city}
+                      </p>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center text-yellow-400">
+                          <FaStar className="mr-1 text-sm" />
+                          <span className="text-white text-sm font-semibold">
+                            {hotel.rating?.toFixed(1) || '4.2'}
+                          </span>
+                        </div>
+                        <div className="text-white font-bold text-sm">
+                          ₩{(hotel.minPrice || 150000).toLocaleString()}~
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </Link>
@@ -235,24 +326,42 @@ export default function HomePage() {
       </section>
 
       {/* Newsletter Section */}
-      <section className="bg-sage-500 text-white py-16">
-        <div className="container mx-auto px-4">
-          <div className="max-w-2xl">
-            <h2 className="text-3xl font-bold mb-4">구독 서비스<br />신청해보세요</h2>
-            <p className="mb-6">The Travel (여행 뉴스 영문 아침 5:30 매일 고시)</p>
-            <p className="mb-6">
+      <section className="bg-sage-500 text-white py-16 relative overflow-hidden">
+        <div className="container mx-auto px-4 max-w-4xl">
+          <div className="text-center">
+            <h2 className="text-3xl font-bold mb-4">구독 서비스 신청해보세요</h2>
+            <p className="mb-2 text-sage-100">The Travel (여행 뉴스 영문 아침 5:30 매일 고시)</p>
+            <p className="mb-8 text-sage-50">
               이메일로 보는 가장 여행 기사들 아침마다 이메일로 뉴스를 꿈이 받아보세요.
             </p>
-            <div className="flex space-x-4">
+            
+            {newsletter.message && (
+              <div className={`mb-4 p-4 rounded-lg ${
+                newsletter.message.includes('완료') 
+                  ? 'bg-green-600 text-white' 
+                  : 'bg-red-600 text-white'
+              }`}>
+                {newsletter.message}
+              </div>
+            )}
+
+            <form onSubmit={handleNewsletterSubscribe} className="flex flex-col sm:flex-row gap-4 max-w-2xl mx-auto">
               <input
                 type="email"
+                value={newsletter.email}
+                onChange={(e) => setNewsletter({ ...newsletter, email: e.target.value })}
                 placeholder="Your email address"
-                className="flex-1 px-4 py-3 rounded-lg text-gray-900"
+                className="flex-1 px-4 py-3 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-white"
+                disabled={newsletter.loading}
               />
-              <button className="px-8 py-3 bg-slate-800 text-white rounded-lg hover:bg-slate-900">
-                Subscribe
+              <button 
+                type="submit"
+                disabled={newsletter.loading}
+                className="px-8 py-3 bg-slate-800 text-white rounded-lg hover:bg-slate-900 disabled:bg-slate-600 disabled:cursor-not-allowed transition-colors"
+              >
+                {newsletter.loading ? 'Subscribe...' : 'Subscribe'}
               </button>
-            </div>
+            </form>
           </div>
         </div>
       </section>

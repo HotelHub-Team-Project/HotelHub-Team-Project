@@ -116,24 +116,25 @@ export default function PaymentPage() {
 
             <div className="flex mb-6">
               <img
-                src={booking?.hotel.images?.[0] || '/placeholder-hotel.jpg'}
-                alt={booking?.hotel.name}
+                src={booking?.hotel?.images?.[0] || '/placeholder-hotel.jpg'}
+                alt={booking?.hotel?.name || '호텔'}
                 className="w-32 h-24 object-cover rounded-lg"
               />
               <div className="ml-4">
-                <h3 className="font-bold text-lg">{booking?.hotel.name}</h3>
-                <p className="text-gray-600">{booking?.room.name}</p>
+                <h3 className="font-bold text-lg">{booking?.hotel?.name || '호텔 정보 없음'}</h3>
+                <p className="text-gray-600">{booking?.room?.name || '객실 정보 없음'}</p>
                 <p className="text-sm text-gray-500 mt-2">
-                  {new Date(booking?.checkIn).toLocaleDateString()} - {new Date(booking?.checkOut).toLocaleDateString()}
+                  {booking?.checkIn ? new Date(booking.checkIn).toLocaleDateString() : ''} - {booking?.checkOut ? new Date(booking.checkOut).toLocaleDateString() : ''}
                 </p>
               </div>
             </div>
 
             <button
               onClick={handlePayment}
-              className="w-full py-3 bg-sage-500 text-white rounded-lg hover:bg-sage-600 font-semibold text-lg"
+              disabled={!booking || !booking.finalPrice}
+              className="w-full py-3 bg-sage-500 text-white rounded-lg hover:bg-sage-600 font-semibold text-lg disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
-              ₩{booking?.finalPrice.toLocaleString()} 결제하기
+              ₩{booking?.finalPrice?.toLocaleString() || 0} 결제하기
             </button>
           </div>
         </div>
@@ -146,12 +147,12 @@ export default function PaymentPage() {
             <div className="space-y-3 mb-6">
               <div className="flex justify-between">
                 <span className="text-gray-600">객실 요금</span>
-                <span>₩{booking?.totalPrice.toLocaleString()}</span>
+                <span>₩{booking?.totalPrice?.toLocaleString() || 0}</span>
               </div>
-              {booking?.discountAmount > 0 && (
+              {(booking?.discountAmount || 0) > 0 && (
                 <div className="flex justify-between text-red-600">
                   <span>할인</span>
-                  <span>-₩{booking?.discountAmount.toLocaleString()}</span>
+                  <span>-₩{booking.discountAmount.toLocaleString()}</span>
                 </div>
               )}
               <div className="flex justify-between">
@@ -164,7 +165,7 @@ export default function PaymentPage() {
               <div className="flex justify-between items-center">
                 <span className="text-lg font-bold">총 결제 금액</span>
                 <span className="text-2xl font-bold text-sage-600">
-                  ₩{booking?.finalPrice.toLocaleString()}
+                  ₩{booking?.finalPrice?.toLocaleString() || 0}
                 </span>
               </div>
             </div>

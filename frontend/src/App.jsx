@@ -21,6 +21,7 @@ import NoticePage from './pages/info/NoticePage';
 import FAQPage from './pages/info/FAQPage';
 import TermsPage from './pages/info/TermsPage';
 import PrivacyPage from './pages/info/PrivacyPage';
+import ContactPage from './pages/info/ContactPage';
 
 // Business Pages
 import BusinessLayout from './layouts/BusinessLayout';
@@ -71,6 +72,7 @@ function App() {
         <Route path="info/faq" element={<FAQPage />} />
         <Route path="info/terms" element={<TermsPage />} />
         <Route path="info/privacy" element={<PrivacyPage />} />
+        <Route path="info/contact" element={<ContactPage />} />
       </Route>
 
       {/* Business Routes */}

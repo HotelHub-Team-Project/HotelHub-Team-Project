@@ -172,17 +172,12 @@ export default function Footer() {
               <Link to="/info/about" className="text-gray-400 hover:text-sage-400 text-sm transition-colors">
                 사업자 정보
               </Link>
-              <Link to="/info/notice" className="text-gray-400 hover:text-sage-400 text-sm transition-colors">
+              <Link to="/info/contact" className="text-gray-400 hover:text-sage-400 text-sm transition-colors">
                 제휴 문의
               </Link>
-              <a 
-                href="https://github.com/HotelHub-Team-Project" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-gray-400 hover:text-sage-400 text-sm transition-colors"
-              >
+              <Link to="/info/contact" className="text-gray-400 hover:text-sage-400 text-sm transition-colors">
                 광고 문의
-              </a>
+              </Link>
             </div>
           </div>
           <div className="mt-4 text-center">

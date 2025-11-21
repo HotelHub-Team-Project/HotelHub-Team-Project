@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../../api/axios';
-import { FaSearch, FaEye, FaTimes, FaDownload } from 'react-icons/fa';
+import { FaSearch, FaEye, FaTimes, FaDownload, FaTrash } from 'react-icons/fa';
 
 export default function BookingManagement() {
   const [bookings, setBookings] = useState([]);
@@ -51,19 +51,33 @@ export default function BookingManagement() {
     }
   };
 
+  const handleDeleteBooking = async (bookingId) => {
+    if (!confirm('이 예약 기록을 완전히 삭제하시겠습니까?\n삭제된 데이터는 복구할 수 없습니다.')) return;
+
+    try {
+      await api.delete(`/bookings/${bookingId}`);
+      alert('예약이 삭제되었습니다.');
+      loadBookings();
+      if (showDetailModal) handleCloseDetail();
+    } catch (error) {
+      console.error('Failed to delete booking:', error);
+      alert(error.response?.data?.message || '예약 삭제 중 오류가 발생했습니다.');
+    }
+  };
+
   const exportToExcel = () => {
     // CSV 형식으로 다운로드
     const headers = ['예약번호', '호텔명', '객실', '고객명', '전화번호', '체크인', '체크아웃', '인원', '금액', '상태'];
     const data = filteredBookings.map(b => [
-      b._id.slice(-8),
-      b.hotel?.name || '',
-      b.room?.name || '',
-      b.user?.name || '',
-      b.user?.phone || '',
-      new Date(b.checkIn).toLocaleDateString(),
-      new Date(b.checkOut).toLocaleDateString(),
+      b._id?.slice(-8) || 'N/A',
+      b.hotel?.name || '정보 없음',
+      b.room?.name || '정보 없음',
+      b.user?.name || '고객 정보 없음',
+      b.user?.phone || '전화번호 없음',
+      b.checkIn ? new Date(b.checkIn).toLocaleDateString() : 'N/A',
+      b.checkOut ? new Date(b.checkOut).toLocaleDateString() : 'N/A',
       typeof b.guests === 'object' ? `성인${b.guests?.adults || 0}/아동${b.guests?.children || 0}` : (b.guests || 0),
-      b.finalPrice,
+      b.finalPrice || 0,
       getStatusText(b.bookingStatus)
     ]);
 
@@ -220,12 +234,12 @@ export default function BookingManagement() {
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="font-semibold">{booking.hotel?.name}</div>
-                    <div className="text-sm text-gray-500">{booking.room?.name}</div>
+                    <div className="font-semibold">{booking.hotel?.name || '정보 없음'}</div>
+                    <div className="text-sm text-gray-500">{booking.room?.name || '정보 없음'}</div>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="font-semibold">{booking.user?.name}</div>
-                    <div className="text-sm text-gray-500">{booking.user?.phone}</div>
+                    <div className="font-semibold">{booking.user?.name || '고객 정보 없음'}</div>
+                    <div className="text-sm text-gray-500">{booking.user?.phone || '전화번호 없음'}</div>
                   </td>
                   <td className="px-6 py-4 text-sm">
                     <div>{new Date(booking.checkIn).toLocaleDateString()}</div>
@@ -249,20 +263,33 @@ export default function BookingManagement() {
                     </span>
                   </td>
                   <td className="px-6 py-4">
-                    <button
-                      onClick={() => handleViewDetail(booking)}
-                      className="text-indigo-600 hover:text-indigo-700 mr-3"
-                    >
-                      <FaEye />
-                    </button>
-                    {booking.bookingStatus === 'confirmed' && (
+                    <div className="flex items-center space-x-3">
                       <button
-                        onClick={() => handleCancelBooking(booking._id)}
-                        className="text-red-600 hover:text-red-700"
+                        onClick={() => handleViewDetail(booking)}
+                        className="text-indigo-600 hover:text-indigo-700"
+                        title="상세보기"
                       >
-                        취소
+                        <FaEye />
                       </button>
-                    )}
+                      {booking.bookingStatus === 'confirmed' && (
+                        <button
+                          onClick={() => handleCancelBooking(booking._id)}
+                          className="text-red-600 hover:text-red-700"
+                          title="예약취소"
+                        >
+                          취소
+                        </button>
+                      )}
+                      {booking.bookingStatus === 'cancelled' && (
+                        <button
+                          onClick={() => handleDeleteBooking(booking._id)}
+                          className="text-red-600 hover:text-red-800"
+                          title="예약삭제"
+                        >
+                          <FaTrash />
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -415,16 +442,25 @@ export default function BookingManagement() {
               </div>
 
               {/* 작업 버튼 */}
-              {selectedBooking.bookingStatus === 'confirmed' && (
-                <div className="flex justify-end space-x-4 pt-4 border-t">
+              <div className="flex justify-end space-x-4 pt-4 border-t">
+                {selectedBooking.bookingStatus === 'confirmed' && (
                   <button
                     onClick={() => handleCancelBooking(selectedBooking._id)}
                     className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
                   >
                     예약 취소
                   </button>
-                </div>
-              )}
+                )}
+                {selectedBooking.bookingStatus === 'cancelled' && (
+                  <button
+                    onClick={() => handleDeleteBooking(selectedBooking._id)}
+                    className="px-6 py-2 bg-red-700 text-white rounded-lg hover:bg-red-800 flex items-center space-x-2"
+                  >
+                    <FaTrash />
+                    <span>예약 기록 삭제</span>
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>

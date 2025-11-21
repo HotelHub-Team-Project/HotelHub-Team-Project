@@ -57,7 +57,8 @@ export default function HotelDetailPage() {
   const checkFavoriteStatus = async () => {
     try {
       const response = await api.get('/users/me');
-      setIsFavorite(response.data.favorites?.some(fav => fav._id === id || fav === id));
+      const favorites = response.data.favorites || [];
+      setIsFavorite(favorites.some(fav => (fav._id || fav) === id));
     } catch (error) {
       console.error('Failed to check favorite status:', error);
     }

@@ -44,10 +44,12 @@ export default function SettingsPage() {
     setMessage({ type: '', text: '' });
 
     try {
-      await axios.put('/users/me', profileData);
+      const response = await axios.put('/users/me', profileData);
       setMessage({ type: 'success', text: '프로필이 업데이트되었습니다.' });
-      // AuthContext의 user 정보도 업데이트
-      window.location.reload();
+      // 3초 후 페이지 새로고침으로 AuthContext 갱신
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
     } catch (error) {
       setMessage({ 
         type: 'error', 

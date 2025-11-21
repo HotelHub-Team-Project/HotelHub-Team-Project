@@ -92,7 +92,7 @@ router.get('/:id', authenticate, async (req, res) => {
 });
 
 // 예약 취소
-router.post('/:id/cancel', authenticate, async (req, res) => {
+router.put('/:id/cancel', authenticate, async (req, res) => {
   try {
     const booking = await Booking.findById(req.params.id);
 
@@ -100,7 +100,7 @@ router.post('/:id/cancel', authenticate, async (req, res) => {
       return res.status(404).json({ message: '예약을 찾을 수 없습니다.' });
     }
 
-    if (booking.user.toString() !== req.user._id.toString()) {
+    if (booking.user.toString() !== req.user._id.toString() && req.user.role !== 'business') {
       return res.status(403).json({ message: '권한이 없습니다.' });
     }
 
@@ -123,6 +123,43 @@ router.post('/:id/cancel', authenticate, async (req, res) => {
     res.json({ message: '예약이 취소되었습니다.' });
   } catch (error) {
     res.status(500).json({ message: '예약 취소 중 오류가 발생했습니다.' });
+  }
+});
+
+// 예약 삭제 (사업자 전용 - 취소된 예약만 삭제 가능)
+router.delete('/:id', authenticate, async (req, res) => {
+  try {
+    const booking = await Booking.findById(req.params.id).populate('hotel');
+
+    if (!booking) {
+      return res.status(404).json({ message: '예약을 찾을 수 없습니다.' });
+    }
+
+    // 사업자 권한 체크 (자신의 호텔 예약만 삭제 가능)
+    if (req.user.role !== 'business' && req.user.role !== 'admin') {
+      return res.status(403).json({ message: '권한이 없습니다.' });
+    }
+
+    // 사업자인 경우 자신의 호텔 예약인지 확인
+    if (req.user.role === 'business') {
+      const hotelOwnerId = booking.hotel.owner?.toString() || booking.hotel.owner;
+      if (hotelOwnerId !== req.user._id.toString()) {
+        return res.status(403).json({ message: '본인 호텔의 예약만 삭제할 수 있습니다.' });
+      }
+    }
+
+    // 취소된 예약만 삭제 가능
+    if (booking.bookingStatus !== 'cancelled') {
+      return res.status(400).json({ message: '취소된 예약만 삭제할 수 있습니다.' });
+    }
+
+    // 예약 삭제
+    await Booking.findByIdAndDelete(req.params.id);
+
+    res.json({ message: '예약이 삭제되었습니다.' });
+  } catch (error) {
+    console.error('Delete booking error:', error);
+    res.status(500).json({ message: '예약 삭제 중 오류가 발생했습니다.' });
   }
 });
 

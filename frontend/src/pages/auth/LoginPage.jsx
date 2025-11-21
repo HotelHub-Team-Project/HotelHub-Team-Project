@@ -153,16 +153,6 @@ export default function LoginPage() {
               </Link>
             </p>
           </div>
-
-          {/* Test Accounts Info */}
-          <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-            <p className="text-xs font-semibold text-gray-700 mb-2">🔐 테스트 계정</p>
-            <div className="text-xs text-gray-600 space-y-1">
-              <p>👤 일반 사용자: test2@gmail.com / 123456</p>
-              <p>🏢 사업자: test1@gmail.com / 123456</p>
-              <p>🛠️ 관리자: admin@test.com / 123456</p>
-            </div>
-          </div>
         </div>
       </div>
     </div>

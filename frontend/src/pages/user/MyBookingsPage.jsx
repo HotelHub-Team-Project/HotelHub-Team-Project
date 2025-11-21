@@ -35,11 +35,11 @@ export default function MyBookingsPage() {
     if (!confirm('정말 예약을 취소하시겠습니까?')) return;
 
     try {
-      await api.post(`/bookings/${bookingId}/cancel`);
+      await api.put(`/bookings/${bookingId}/cancel`);
       alert('예약이 취소되었습니다.');
       loadBookings();
     } catch (error) {
-      alert('예약 취소 중 오류가 발생했습니다.');
+      alert(error.response?.data?.message || '예약 취소 중 오류가 발생했습니다.');
     }
   };
 
@@ -139,7 +139,7 @@ export default function MyBookingsPage() {
                       <div className="text-gray-600 mb-1">투숙객</div>
                       <div className="font-semibold flex items-center">
                         <FaUsers className="mr-2" />
-                        성인 {booking.guests?.adults}명
+                        성인 {booking.guests?.adults || 0}명
                       </div>
                     </div>
                   </div>
@@ -148,7 +148,7 @@ export default function MyBookingsPage() {
                     <div>
                       <div className="text-gray-600 text-sm">결제 금액</div>
                       <div className="text-2xl font-bold text-sage-600">
-                        ₩{booking.finalPrice.toLocaleString()}
+                        ₩{booking.finalPrice?.toLocaleString() || 0}
                       </div>
                     </div>
 

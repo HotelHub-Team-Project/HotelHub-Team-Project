@@ -56,7 +56,7 @@ export default function HotelManagement() {
     if (hotel) {
       setEditingHotel(hotel);
       setFormData({
-        name: hotel.name,
+        name: hotel.name || '',
         description: hotel.description || '',
         location: hotel.location || { city: '', district: '', address: '', zipCode: '' },
         starRating: hotel.starRating || 5,

@@ -74,13 +74,14 @@ export default function RoomManagement() {
   const handleOpenModal = (room = null) => {
     if (room) {
       setEditingRoom(room);
+      const hotelId = room.hotel?._id || room.hotel;
       setFormData({
-        hotel: room.hotel._id || room.hotel,
-        name: room.name,
-        type: room.type,
+        hotel: hotelId || '',
+        name: room.name || '',
+        type: room.type || 'standard',
         description: room.description || '',
-        basePrice: room.basePrice,
-        weekendPrice: room.weekendPrice || room.basePrice,
+        basePrice: room.basePrice || 0,
+        weekendPrice: room.weekendPrice || room.basePrice || 0,
         capacity: room.capacity || { standard: 2, max: 4 },
         size: room.size || 0,
         bedType: room.bedType || 'double',

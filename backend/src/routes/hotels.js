@@ -28,12 +28,12 @@ router.get('/search', async (req, res) => {
         
         return {
           ...hotel.toObject(),
-          minPrice: rooms.length > 0 ? rooms[0].price : 0
+          minPrice: rooms && rooms.length > 0 ? rooms[0].price : 0
         };
       })
     );
 
-    res.json(hotelsWithPrice);
+    res.json(hotelsWithPrice || []);
   } catch (error) {
     console.error('Hotel search error:', error);
     res.status(500).json({ message: '호텔 검색 중 오류가 발생했습니다.', error: error.message });

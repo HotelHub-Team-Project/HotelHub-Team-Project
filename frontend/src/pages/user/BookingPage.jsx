@@ -44,7 +44,7 @@ export default function BookingPage() {
   };
 
   const calculateTotalPrice = () => {
-    if (!bookingData.checkIn || !bookingData.checkOut || !room) return 0;
+    if (!bookingData.checkIn || !bookingData.checkOut || !room || !room.price) return 0;
     
     const checkIn = new Date(bookingData.checkIn);
     const checkOut = new Date(bookingData.checkOut);
@@ -70,7 +70,12 @@ export default function BookingPage() {
     }
     
     try {
-      const hotelId = typeof hotel === 'object' ? hotel._id : hotel;
+      const hotelId = hotel?._id || hotel;
+      
+      if (!hotelId) {
+        alert('호텔 정보를 찾을 수 없습니다.');
+        return;
+      }
       
       const response = await api.post('/bookings', {
         hotel: hotelId,
