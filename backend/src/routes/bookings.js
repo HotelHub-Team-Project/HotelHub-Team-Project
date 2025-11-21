@@ -3,7 +3,9 @@ const router = express.Router();
 const Booking = require('../models/Booking');
 const Room = require('../models/Room');
 const User = require('../models/User');
+const Hotel = require('../models/Hotel');
 const { authenticate } = require('../middleware/auth');
+const { sendBookingConfirmation, sendCancellationConfirmation } = require('../utils/emailService');
 
 // 예약 생성
 router.post('/', authenticate, async (req, res) => {
@@ -51,6 +53,16 @@ router.post('/', authenticate, async (req, res) => {
     // 객실 재고 감소
     roomData.availableRooms -= 1;
     await roomData.save();
+
+    // 이메일 발송 (비동기로 처리, 실패해도 예약은 유지)
+    try {
+      const user = await User.findById(req.user._id);
+      const hotel = roomData.hotel;
+      await sendBookingConfirmation(booking, user, hotel, roomData);
+    } catch (emailError) {
+      console.error('Email sending failed:', emailError);
+      // 이메일 발송 실패는 로그만 남기고 예약은 계속 진행
+    }
 
     res.status(201).json(booking);
   } catch (error) {
@@ -120,9 +132,74 @@ router.put('/:id/cancel', authenticate, async (req, res) => {
       });
     }
 
+    // 취소 이메일 발송
+    try {
+      const user = await User.findById(req.user._id);
+      const hotel = await Hotel.findById(booking.hotel);
+      await sendCancellationConfirmation(booking, user, hotel);
+    } catch (emailError) {
+      console.error('Cancellation email failed:', emailError);
+    }
+
     res.json({ message: '예약이 취소되었습니다.' });
   } catch (error) {
     res.status(500).json({ message: '예약 취소 중 오류가 발생했습니다.' });
+  }
+});
+
+// 예약 변경
+router.put('/:id/modify', authenticate, async (req, res) => {
+  try {
+    const { checkIn, checkOut, guests, specialRequests } = req.body;
+    const booking = await Booking.findById(req.params.id).populate('room');
+
+    if (!booking) {
+      return res.status(404).json({ message: '예약을 찾을 수 없습니다.' });
+    }
+
+    if (booking.user.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: '권한이 없습니다.' });
+    }
+
+    // 변경 이력 저장
+    const changes = {};
+    if (checkIn && checkIn !== booking.checkIn.toISOString()) {
+      changes.checkIn = { from: booking.checkIn, to: new Date(checkIn) };
+      booking.checkIn = new Date(checkIn);
+    }
+    if (checkOut && checkOut !== booking.checkOut.toISOString()) {
+      changes.checkOut = { from: booking.checkOut, to: new Date(checkOut) };
+      booking.checkOut = new Date(checkOut);
+    }
+    if (guests) {
+      changes.guests = { from: booking.guests, to: guests };
+      booking.guests = guests;
+    }
+    if (specialRequests !== undefined) {
+      changes.specialRequests = { from: booking.specialRequests, to: specialRequests };
+      booking.specialRequests = specialRequests;
+    }
+
+    // 가격 재계산
+    if (changes.checkIn || changes.checkOut) {
+      const nights = Math.ceil((booking.checkOut - booking.checkIn) / (1000 * 60 * 60 * 24));
+      booking.totalPrice = booking.room.price * nights;
+      booking.finalPrice = booking.totalPrice - booking.discountAmount;
+      changes.price = { nights, totalPrice: booking.totalPrice, finalPrice: booking.finalPrice };
+    }
+
+    booking.modificationHistory.push({
+      modifiedBy: req.user._id,
+      changes,
+      reason: req.body.reason || '사용자 요청'
+    });
+
+    await booking.save();
+
+    res.json({ message: '예약이 변경되었습니다.', booking });
+  } catch (error) {
+    console.error('Booking modification error:', error);
+    res.status(500).json({ message: '예약 변경 중 오류가 발생했습니다.' });
   }
 });
 

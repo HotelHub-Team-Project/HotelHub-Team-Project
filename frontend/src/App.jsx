@@ -1,5 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
+import { LanguageProvider } from './context/LanguageContext';
 
 // User Pages
 import UserLayout from './layouts/UserLayout';
@@ -31,15 +33,19 @@ import RoomManagement from './pages/business/RoomManagement';
 import BookingManagement from './pages/business/BookingManagement';
 import ReviewManagement from './pages/business/ReviewManagement';
 import BusinessSettingsPage from './pages/business/SettingsPage';
+import BookingCalendar from './components/BookingCalendar';
 
 // Admin Pages
 import AdminLayout from './layouts/AdminLayout';
 import AdminDashboard from './pages/admin/Dashboard';
+import UserManagement from './pages/admin/UserManagement';
 import BusinessApproval from './pages/admin/BusinessApproval';
 import HotelApproval from './pages/admin/HotelApproval';
 import ReportedReviews from './pages/admin/ReportedReviews';
 import CouponManagement from './pages/admin/CouponManagement';
 import SystemSettings from './pages/admin/SystemSettings';
+import ActivityLogs from './pages/admin/ActivityLogs';
+import HotelTags from './pages/admin/HotelTags';
 
 // Auth Pages
 import LoginPage from './pages/auth/LoginPage';
@@ -47,7 +53,9 @@ import RegisterPage from './pages/auth/RegisterPage';
 
 function App() {
   return (
-    <Routes>
+    <ThemeProvider>
+      <LanguageProvider>
+        <Routes>
       {/* Auth Routes */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
@@ -81,6 +89,7 @@ function App() {
         <Route path="hotels" element={<HotelManagement />} />
         <Route path="rooms" element={<RoomManagement />} />
         <Route path="bookings" element={<BookingManagement />} />
+        <Route path="calendar" element={<BookingCalendar />} />
         <Route path="reviews" element={<ReviewManagement />} />
         <Route path="settings" element={<BusinessSettingsPage />} />
       </Route>
@@ -88,13 +97,18 @@ function App() {
       {/* Admin Routes */}
       <Route path="/admin" element={<ProtectedRoute role="admin"><AdminLayout /></ProtectedRoute>}>
         <Route index element={<AdminDashboard />} />
+        <Route path="users" element={<UserManagement />} />
         <Route path="business" element={<BusinessApproval />} />
         <Route path="hotels" element={<HotelApproval />} />
         <Route path="reviews" element={<ReportedReviews />} />
         <Route path="coupons" element={<CouponManagement />} />
+        <Route path="activity-logs" element={<ActivityLogs />} />
+        <Route path="hotel-tags" element={<HotelTags />} />
         <Route path="settings" element={<SystemSettings />} />
       </Route>
-    </Routes>
+        </Routes>
+      </LanguageProvider>
+    </ThemeProvider>
   );
 }
 

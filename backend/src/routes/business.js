@@ -200,4 +200,66 @@ router.get('/revenue/monthly', async (req, res) => {
   }
 });
 
+// 예약 승인
+router.put('/bookings/:id/approve', async (req, res) => {
+  try {
+    const booking = await Booking.findById(req.params.id).populate('hotel');
+    
+    if (!booking) {
+      return res.status(404).json({ message: '예약을 찾을 수 없습니다.' });
+    }
+
+    // 권한 체크
+    if (booking.hotel.owner.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: '권한이 없습니다.' });
+    }
+
+    booking.approvalStatus = 'approved';
+    booking.bookingStatus = 'confirmed';
+    booking.approvedBy = req.user._id;
+    booking.approvedAt = new Date();
+    await booking.save();
+
+    res.json({ message: '예약이 승인되었습니다.', booking });
+  } catch (error) {
+    console.error('Booking approval error:', error);
+    res.status(500).json({ message: '예약 승인 중 오류가 발생했습니다.' });
+  }
+});
+
+// 예약 거부
+router.put('/bookings/:id/reject', async (req, res) => {
+  try {
+    const { reason } = req.body;
+    const booking = await Booking.findById(req.params.id).populate('hotel');
+    
+    if (!booking) {
+      return res.status(404).json({ message: '예약을 찾을 수 없습니다.' });
+    }
+
+    // 권한 체크
+    if (booking.hotel.owner.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: '권한이 없습니다.' });
+    }
+
+    booking.approvalStatus = 'rejected';
+    booking.bookingStatus = 'rejected';
+    booking.rejectionReason = reason || '사업자 승인 거부';
+    booking.approvedBy = req.user._id;
+    booking.approvedAt = new Date();
+    await booking.save();
+
+    // 객실 재고 복구
+    const Room = require('../models/Room');
+    await Room.findByIdAndUpdate(booking.room, {
+      $inc: { availableRooms: 1 }
+    });
+
+    res.json({ message: '예약이 거부되었습니다.', booking });
+  } catch (error) {
+    console.error('Booking rejection error:', error);
+    res.status(500).json({ message: '예약 거부 중 오류가 발생했습니다.' });
+  }
+});
+
 module.exports = router;

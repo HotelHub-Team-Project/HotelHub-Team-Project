@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import ImageGalleryModal from '../../components/ImageGalleryModal';
 import api from '../../api/axios';
 import { FaStar, FaMapMarkerAlt, FaWifi, FaParking, FaSwimmingPool, FaDumbbell, FaHeart, FaEdit, FaTrash, FaTimes, FaFlag } from 'react-icons/fa';
 
@@ -11,6 +12,7 @@ export default function HotelDetailPage() {
   const [rooms, setRooms] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [selectedImage, setSelectedImage] = useState(0);
+  const [showGallery, setShowGallery] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isFavorite, setIsFavorite] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
@@ -30,6 +32,13 @@ export default function HotelDetailPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, id]);
+
+  useEffect(() => {
+    if (hotel && hotel.location) {
+      initializeMap();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hotel]);
 
   const loadHotelDetails = async () => {
     try {
@@ -62,6 +71,43 @@ export default function HotelDetailPage() {
     } catch (error) {
       console.error('Failed to check favorite status:', error);
     }
+  };
+
+  const initializeMap = () => {
+    if (!window.kakao || !window.kakao.maps) {
+      console.error('Kakao Maps API not loaded');
+      return;
+    }
+
+    const container = document.getElementById('map');
+    if (!container) return;
+
+    const options = {
+      center: new window.kakao.maps.LatLng(
+        hotel.location?.coordinates?.[1] || 35.1595,
+        hotel.location?.coordinates?.[0] || 129.1600
+      ),
+      level: 3
+    };
+
+    const map = new window.kakao.maps.Map(container, options);
+
+    const markerPosition = new window.kakao.maps.LatLng(
+      hotel.location?.coordinates?.[1] || 35.1595,
+      hotel.location?.coordinates?.[0] || 129.1600
+    );
+
+    const marker = new window.kakao.maps.Marker({
+      position: markerPosition
+    });
+
+    marker.setMap(map);
+
+    const infowindow = new window.kakao.maps.InfoWindow({
+      content: `<div style="padding:5px;font-size:12px;">${hotel.name}</div>`
+    });
+
+    infowindow.open(map, marker);
   };
 
   const toggleFavorite = async () => {
@@ -203,9 +249,9 @@ export default function HotelDetailPage() {
         
         <div className="text-right">
           <div className="text-3xl font-bold text-sage-600 mb-2">
-            ₩{((rooms[0]?.price || 200000)).toLocaleString()}
+            {rooms[0]?.price ? `₩${rooms[0].price.toLocaleString()}` : '가격 문의'}
           </div>
-          <div className="text-gray-600">/night</div>
+          <div className="text-gray-600">{rooms[0]?.price ? '/night' : ''}</div>
           <button 
             onClick={toggleFavorite}
             className={`mt-4 px-6 py-2 border-2 rounded-lg flex items-center space-x-2 transition-colors ${
@@ -226,7 +272,10 @@ export default function HotelDetailPage() {
           <img
             src={hotel.images?.[selectedImage] || '/placeholder-hotel.jpg'}
             alt={hotel.name}
-            className="w-full h-96 object-cover rounded-lg"
+            className="w-full h-96 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+            onClick={() => {
+              setShowGallery(true);
+            }}
           />
         </div>
         <div className="col-span-4 grid grid-cols-2 gap-4">
@@ -235,14 +284,25 @@ export default function HotelDetailPage() {
               key={idx}
               src={img}
               alt={`${hotel.name} ${idx + 1}`}
-              onClick={() => setSelectedImage(idx)}
-              className={`w-full h-44 object-cover rounded-lg cursor-pointer ${
+              onClick={() => {
+                setSelectedImage(idx);
+                setShowGallery(true);
+              }}
+              className={`w-full h-44 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity ${
                 selectedImage === idx ? 'ring-4 ring-sage-500' : ''
               }`}
             />
           ))}
         </div>
       </div>
+
+      {/* Image Gallery Modal */}
+      <ImageGalleryModal
+        images={hotel.images || []}
+        isOpen={showGallery}
+        onClose={() => setShowGallery(false)}
+        initialIndex={selectedImage}
+      />
 
       {/* Overview & Amenities */}
       <div className="grid grid-cols-12 gap-8 mb-8">
@@ -319,9 +379,7 @@ export default function HotelDetailPage() {
       {/* Location Map */}
       <section className="mb-8">
         <h2 className="text-2xl font-bold mb-6">지도보기</h2>
-        <div className="bg-gray-200 h-96 rounded-lg flex items-center justify-center">
-          <p className="text-gray-600">지도가 여기에 표시됩니다 (Kakao Map API)</p>
-        </div>
+        <div id="map" className="w-full h-96 rounded-lg"></div>
       </section>
 
       {/* Reviews */}

@@ -2,7 +2,7 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { 
   FaChartBar, FaUsers, FaHotel, FaExclamationTriangle, 
-  FaTicketAlt, FaCog, FaSignOutAlt, FaHome 
+  FaTicketAlt, FaCog, FaSignOutAlt, FaHome, FaClipboardList, FaTags
 } from 'react-icons/fa';
 
 export default function AdminLayout() {
@@ -11,10 +11,13 @@ export default function AdminLayout() {
 
   const menuItems = [
     { path: '/admin', label: '대시보드', icon: FaChartBar },
+    { path: '/admin/users', label: '회원 관리', icon: FaUsers },
     { path: '/admin/business', label: '사업자 관리', icon: FaUsers },
     { path: '/admin/hotels', label: '호텔 관리', icon: FaHotel },
+    { path: '/admin/hotel-tags', label: '호텔 태그', icon: FaTags },
     { path: '/admin/reviews', label: '리뷰 관리', icon: FaExclamationTriangle },
     { path: '/admin/coupons', label: '쿠폰 관리', icon: FaTicketAlt },
+    { path: '/admin/activity-logs', label: '활동 로그', icon: FaClipboardList },
     { path: '/admin/settings', label: '설정', icon: FaCog },
   ];
 

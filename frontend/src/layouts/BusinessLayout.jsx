@@ -11,6 +11,7 @@ export default function BusinessLayout() {
     { path: '/business/hotels', label: '호텔 관리', icon: FaHotel },
     { path: '/business/rooms', label: '객실 관리', icon: FaBed },
     { path: '/business/bookings', label: '예약 관리', icon: FaCalendar },
+    { path: '/business/calendar', label: '예약 캘린더', icon: FaCalendar },
     { path: '/business/reviews', label: '리뷰 관리', icon: FaStar },
     { path: '/business/settings', label: '계정 설정', icon: FaCog },
   ];

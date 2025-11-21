@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import api from '../../api/axios';
-import { FaSearch, FaMapMarkerAlt, FaStar } from 'react-icons/fa';
+import { FaSearch, FaMapMarkerAlt, FaStar, FaClock } from 'react-icons/fa';
 
 // 배경 이미지 배열 (고급 호텔 이미지)
 const heroBackgrounds = [
@@ -14,7 +15,9 @@ const heroBackgrounds = [
 ];
 
 export default function HomePage() {
+  const { user } = useAuth();
   const [featuredHotels, setFeaturedHotels] = useState([]);
+  const [recentlyViewed, setRecentlyViewed] = useState([]);
   const [currentBgIndex, setCurrentBgIndex] = useState(0);
   const [searchData, setSearchData] = useState({
     city: '',
@@ -30,6 +33,9 @@ export default function HomePage() {
 
   useEffect(() => {
     loadFeaturedHotels();
+    if (user) {
+      loadRecentlyViewed();
+    }
     
     // 배경 이미지 자동 전환 (5초마다)
     const bgInterval = setInterval(() => {
@@ -37,7 +43,7 @@ export default function HomePage() {
     }, 5000);
 
     return () => clearInterval(bgInterval);
-  }, []);
+  }, [user]);
 
   const loadFeaturedHotels = async () => {
     try {
@@ -46,6 +52,16 @@ export default function HomePage() {
     } catch (error) {
       console.error('Failed to load hotels:', error);
       setFeaturedHotels([]);
+    }
+  };
+
+  const loadRecentlyViewed = async () => {
+    try {
+      const response = await api.get('/view-history/recent?limit=4');
+      setRecentlyViewed(response.data || []);
+    } catch (error) {
+      console.error('Failed to load recently viewed:', error);
+      setRecentlyViewed([]);
     }
   };
 
@@ -241,6 +257,59 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* 최근 본 호텔 */}
+      {user && recentlyViewed.length > 0 && (
+        <section className="container mx-auto px-4 py-16 bg-gray-50">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h2 className="text-3xl font-bold flex items-center">
+                <FaClock className="mr-3 text-sage-600" />
+                최근 본 호텔
+              </h2>
+              <p className="text-gray-600 mt-2">다시 보고 싶은 호텔을 빠르게 확인하세요</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-4 gap-6">
+            {recentlyViewed.map((item) => {
+              const hotel = item.hotel;
+              if (!hotel) return null;
+              
+              return (
+                <Link key={item._id} to={`/hotels/${hotel._id}`} className="card group">
+                  <div className="relative h-48 overflow-hidden">
+                    <img
+                      src={hotel.images?.[0] || '/placeholder-hotel.jpg'}
+                      alt={hotel.name}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                    />
+                    <div className="absolute top-2 right-2 bg-black bg-opacity-60 text-white px-3 py-1 rounded-full text-xs">
+                      {new Date(item.viewedAt).toLocaleDateString()}
+                    </div>
+                  </div>
+                  <div className="p-4">
+                    <h3 className="font-bold text-lg mb-2">{hotel.name}</h3>
+                    <p className="text-sm text-gray-600 mb-2 flex items-center">
+                      <FaMapMarkerAlt className="mr-1" />
+                      {hotel.location?.city}
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center text-yellow-500">
+                        <FaStar />
+                        <span className="ml-1 text-gray-700">{hotel.rating?.toFixed(1) || '4.2'}</span>
+                      </div>
+                      <div className="text-sage-600 font-bold">
+                        ₩{(hotel.minPrice || 150000).toLocaleString()}
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
       {/* Popular Destinations Section */}
       <section className="bg-sage-50 py-16">
         <div className="container mx-auto px-4">
@@ -313,7 +382,7 @@ export default function HomePage() {
                           </span>
                         </div>
                         <div className="text-white font-bold text-sm">
-                          ₩{(hotel.minPrice || 150000).toLocaleString()}~
+                          {hotel.minPrice ? `₩${hotel.minPrice.toLocaleString()}~` : '가격 문의'}
                         </div>
                       </div>
                     </div>

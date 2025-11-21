@@ -26,6 +26,9 @@ app.use('/api/coupons', require('./routes/coupons'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/business', require('./routes/business'));
+app.use('/api/favorites', require('./routes/favorites'));
+app.use('/api/view-history', require('./routes/viewHistory'));
+app.use('/api/activity-logs', require('./routes/activityLogs'));
 
 // MongoDB 연결
 mongoose.connect(process.env.MONGO_URI)

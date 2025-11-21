@@ -52,8 +52,42 @@ const bookingSchema = new mongoose.Schema({
   },
   bookingStatus: {
     type: String,
-    enum: ['confirmed', 'cancelled', 'completed'],
-    default: 'confirmed'
+    enum: ['pending', 'confirmed', 'rejected', 'cancelled', 'completed'],
+    default: 'pending'
+  },
+  approvalStatus: {
+    type: String,
+    enum: ['pending', 'approved', 'rejected'],
+    default: 'pending'
+  },
+  approvedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  approvedAt: Date,
+  rejectionReason: String,
+  modificationHistory: [{
+    modifiedAt: {
+      type: Date,
+      default: Date.now
+    },
+    modifiedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    },
+    changes: mongoose.Schema.Types.Mixed,
+    reason: String
+  }],
+  autoCancel: {
+    enabled: {
+      type: Boolean,
+      default: true
+    },
+    cancelAt: Date,
+    cancelled: {
+      type: Boolean,
+      default: false
+    }
   },
   usedCoupons: [{
     type: mongoose.Schema.Types.ObjectId,

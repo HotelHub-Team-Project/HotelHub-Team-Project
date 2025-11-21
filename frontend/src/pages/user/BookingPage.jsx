@@ -63,9 +63,21 @@ export default function BookingPage() {
 
     const checkIn = new Date(bookingData.checkIn);
     const checkOut = new Date(bookingData.checkOut);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    if (checkIn < today) {
+      alert('체크인 날짜는 오늘 이후여야 합니다.');
+      return;
+    }
     
     if (checkOut <= checkIn) {
       alert('체크아웃 날짜는 체크인 날짜보다 늦어야 합니다.');
+      return;
+    }
+
+    if (!room || !room.price) {
+      alert('객실 정보를 불러올 수 없습니다. 다시 시도해주세요.');
       return;
     }
     

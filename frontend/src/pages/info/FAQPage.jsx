@@ -1,8 +1,10 @@
 import { useState } from 'react';
-import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import { FaChevronDown, FaChevronUp, FaSearch, FaThumbsUp } from 'react-icons/fa';
 
 export default function FAQPage() {
   const [openIndex, setOpenIndex] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [helpfulQuestions, setHelpfulQuestions] = useState([]);
 
   const faqs = [
     {
@@ -84,55 +86,121 @@ export default function FAQPage() {
     setOpenIndex(openIndex === index ? null : index);
   };
 
+  const markHelpful = (categoryIndex, questionIndex) => {
+    const id = `${categoryIndex}-${questionIndex}`;
+    if (!helpfulQuestions.includes(id)) {
+      setHelpfulQuestions([...helpfulQuestions, id]);
+    }
+  };
+
+  // 검색 필터링
+  const filteredFAQs = faqs.map((category, catIdx) => ({
+    ...category,
+    categoryIndex: catIdx,
+    questions: category.questions.map((q, qIdx) => ({ ...q, questionIndex: qIdx }))
+      .filter(q =>
+        searchTerm === '' ||
+        q.q.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        q.a.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+  })).filter(category => category.questions.length > 0);
+
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-4xl font-bold mb-4">자주 묻는 질문</h1>
-        <p className="text-gray-600 mb-12">
+        <p className="text-gray-600 mb-8">
           HotelHub 이용 중 궁금하신 점을 확인해보세요. 
           아래 목록에서 원하는 답변을 찾지 못하셨다면 고객센터(1588-0000)로 문의해주세요.
         </p>
 
-        <div className="space-y-8">
-          {faqs.map((category, categoryIndex) => (
-            <div key={categoryIndex}>
-              <h2 className="text-2xl font-bold mb-4 text-sage-600">{category.category}</h2>
-              <div className="space-y-3">
-                {category.questions.map((faq, questionIndex) => {
-                  const index = `${categoryIndex}-${questionIndex}`;
-                  const isOpen = openIndex === index;
+        {/* 검색창 */}
+        <div className="mb-12">
+          <div className="relative max-w-2xl mx-auto">
+            <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              placeholder="질문을 검색해보세요..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sage-500 focus:border-transparent"
+            />
+          </div>
+          {searchTerm && (
+            <p className="text-center mt-3 text-gray-600">
+              "{searchTerm}"에 대한 검색 결과 {filteredFAQs.reduce((acc, cat) => acc + cat.questions.length, 0)}개
+            </p>
+          )}
+        </div>
 
-                  return (
-                    <div
-                      key={questionIndex}
-                      className="bg-white rounded-lg shadow-md overflow-hidden"
-                    >
-                      <button
-                        onClick={() => toggleFAQ(categoryIndex, questionIndex)}
-                        className="w-full px-6 py-4 flex items-start justify-between hover:bg-gray-50 transition-colors"
-                      >
-                        <span className="text-left font-semibold text-gray-900 pr-4">
-                          Q. {faq.q}
-                        </span>
-                        {isOpen ? (
-                          <FaChevronUp className="text-sage-600 mt-1 flex-shrink-0" />
-                        ) : (
-                          <FaChevronDown className="text-gray-400 mt-1 flex-shrink-0" />
-                        )}
-                      </button>
-                      {isOpen && (
-                        <div className="px-6 py-4 bg-sage-50 border-t">
-                          <p className="text-gray-700 leading-relaxed">
-                            A. {faq.a}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
+        <div className="space-y-8">
+          {filteredFAQs.length === 0 ? (
+            <div className="text-center py-12 text-gray-500">
+              <p className="text-lg mb-2">검색 결과가 없습니다.</p>
+              <p className="text-sm">다른 검색어로 다시 시도해주세요.</p>
             </div>
-          ))}
+          ) : (
+            filteredFAQs.map((category) => {
+              const categoryIndex = category.categoryIndex;
+              return (
+                <div key={categoryIndex}>
+                  <h2 className="text-2xl font-bold mb-4 text-sage-600">
+                    {category.category} ({category.questions.length})
+                  </h2>
+                  <div className="space-y-3">
+                    {category.questions.map((faq) => {
+                      const questionIndex = faq.questionIndex;
+                      const index = `${categoryIndex}-${questionIndex}`;
+                      const isOpen = openIndex === index;
+                      const isHelpful = helpfulQuestions.includes(index);
+
+                      return (
+                        <div
+                          key={questionIndex}
+                          className="bg-white rounded-lg shadow-md overflow-hidden"
+                        >
+                          <button
+                            onClick={() => toggleFAQ(categoryIndex, questionIndex)}
+                            className="w-full px-6 py-4 flex items-start justify-between hover:bg-gray-50 transition-colors"
+                          >
+                            <span className="text-left font-semibold text-gray-900 pr-4">
+                              Q. {faq.q}
+                            </span>
+                            {isOpen ? (
+                              <FaChevronUp className="text-sage-600 mt-1 flex-shrink-0" />
+                            ) : (
+                              <FaChevronDown className="text-gray-400 mt-1 flex-shrink-0" />
+                            )}
+                          </button>
+                          {isOpen && (
+                            <div className="px-6 py-4 bg-sage-50 border-t">
+                              <p className="text-gray-700 leading-relaxed mb-4">
+                                A. {faq.a}
+                              </p>
+                              <button
+                                onClick={() => markHelpful(categoryIndex, questionIndex)}
+                                disabled={isHelpful}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                                  isHelpful
+                                    ? 'bg-green-100 text-green-700 cursor-not-allowed'
+                                    : 'bg-white text-gray-600 hover:bg-gray-100'
+                                }`}
+                              >
+                                <FaThumbsUp className="text-sm" />
+                                <span className="text-sm">
+                                  {isHelpful ? '도움이 되었습니다!' : '도움이 되었나요?'}
+                                </span>
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })
+          )}
         </div>
 
         <div className="mt-12 bg-blue-50 rounded-lg p-8 text-center">

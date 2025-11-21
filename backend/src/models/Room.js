@@ -14,6 +14,19 @@ const roomSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  roomType: {
+    type: String,
+    enum: ['standard', 'deluxe', 'suite', 'premium'],
+    default: 'standard'
+  },
+  bedType: {
+    type: String,
+    enum: ['single', 'double', 'twin', 'queen', 'king']
+  },
+  viewType: {
+    type: String,
+    enum: ['ocean', 'mountain', 'city', 'garden']
+  },
   description: String,
   price: {
     type: Number,

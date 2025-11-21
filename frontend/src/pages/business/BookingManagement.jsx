@@ -65,6 +65,35 @@ export default function BookingManagement() {
     }
   };
 
+  const handleApproveBooking = async (bookingId) => {
+    if (!confirm('이 예약을 승인하시겠습니까?')) return;
+
+    try {
+      await api.put(`/business/bookings/${bookingId}/approve`);
+      alert('예약이 승인되었습니다.');
+      loadBookings();
+      if (showDetailModal) handleCloseDetail();
+    } catch (error) {
+      console.error('Failed to approve booking:', error);
+      alert('예약 승인 중 오류가 발생했습니다.');
+    }
+  };
+
+  const handleRejectBooking = async (bookingId) => {
+    const reason = prompt('예약 거부 사유를 입력하세요:');
+    if (!reason) return;
+
+    try {
+      await api.put(`/business/bookings/${bookingId}/reject`, { reason });
+      alert('예약이 거부되었습니다.');
+      loadBookings();
+      if (showDetailModal) handleCloseDetail();
+    } catch (error) {
+      console.error('Failed to reject booking:', error);
+      alert('예약 거부 중 오류가 발생했습니다.');
+    }
+  };
+
   const exportToExcel = () => {
     // CSV 형식으로 다운로드
     const headers = ['예약번호', '호텔명', '객실', '고객명', '전화번호', '체크인', '체크아웃', '인원', '금액', '상태'];
@@ -120,6 +149,7 @@ export default function BookingManagement() {
 
   const stats = {
     total: bookings.length,
+    pending: bookings.filter(b => b.approvalStatus === 'pending' || b.bookingStatus === 'pending').length,
     confirmed: bookings.filter(b => b.bookingStatus === 'confirmed').length,
     cancelled: bookings.filter(b => b.bookingStatus === 'cancelled').length,
     revenue: bookings
@@ -149,10 +179,14 @@ export default function BookingManagement() {
       </div>
 
       {/* 통계 카드 */}
-      <div className="grid grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-5 gap-6 mb-8">
         <div className="bg-white rounded-lg shadow-md p-6">
           <p className="text-gray-600 text-sm mb-1">총 예약</p>
           <h3 className="text-3xl font-bold text-indigo-600">{stats.total}</h3>
+        </div>
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <p className="text-gray-600 text-sm mb-1">승인 대기</p>
+          <h3 className="text-3xl font-bold text-yellow-600">{stats.pending}</h3>
         </div>
         <div className="bg-white rounded-lg shadow-md p-6">
           <p className="text-gray-600 text-sm mb-1">확정 예약</p>
@@ -271,6 +305,24 @@ export default function BookingManagement() {
                       >
                         <FaEye />
                       </button>
+                      {(booking.approvalStatus === 'pending' || booking.bookingStatus === 'pending') && (
+                        <>
+                          <button
+                            onClick={() => handleApproveBooking(booking._id)}
+                            className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-xs"
+                            title="승인"
+                          >
+                            승인
+                          </button>
+                          <button
+                            onClick={() => handleRejectBooking(booking._id)}
+                            className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-xs"
+                            title="거부"
+                          >
+                            거부
+                          </button>
+                        </>
+                      )}
                       {booking.bookingStatus === 'confirmed' && (
                         <button
                           onClick={() => handleCancelBooking(booking._id)}
@@ -443,6 +495,22 @@ export default function BookingManagement() {
 
               {/* 작업 버튼 */}
               <div className="flex justify-end space-x-4 pt-4 border-t">
+                {(selectedBooking.approvalStatus === 'pending' || selectedBooking.bookingStatus === 'pending') && (
+                  <>
+                    <button
+                      onClick={() => handleApproveBooking(selectedBooking._id)}
+                      className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                    >
+                      예약 승인
+                    </button>
+                    <button
+                      onClick={() => handleRejectBooking(selectedBooking._id)}
+                      className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                    >
+                      예약 거부
+                    </button>
+                  </>
+                )}
                 {selectedBooking.bookingStatus === 'confirmed' && (
                   <button
                     onClick={() => handleCancelBooking(selectedBooking._id)}

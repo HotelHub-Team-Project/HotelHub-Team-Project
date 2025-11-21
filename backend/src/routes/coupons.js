@@ -78,4 +78,57 @@ router.delete('/:id', authenticate, authorize('admin'), async (req, res) => {
   }
 });
 
+// 최적 쿠폰 자동 선택
+router.post('/calculate-best', authenticate, async (req, res) => {
+  try {
+    const { totalPrice, hotelId } = req.body;
+
+    // 사용 가능한 쿠폰 조회
+    const coupons = await Coupon.find({
+      status: 'active',
+      validFrom: { $lte: new Date() },
+      validTo: { $gte: new Date() },
+      $or: [
+        { applicableHotels: { $size: 0 } },
+        { applicableHotels: hotelId }
+      ]
+    });
+
+    let bestCoupon = null;
+    let maxDiscount = 0;
+
+    for (const coupon of coupons) {
+      let discount = 0;
+
+      if (coupon.discountType === 'percentage') {
+        discount = (totalPrice * coupon.discountValue) / 100;
+        if (coupon.maxDiscount) {
+          discount = Math.min(discount, coupon.maxDiscount);
+        }
+      } else if (coupon.discountType === 'fixed') {
+        discount = coupon.discountValue;
+      }
+
+      // 최소 구매 금액 체크
+      if (coupon.minPurchase && totalPrice < coupon.minPurchase) {
+        continue;
+      }
+
+      if (discount > maxDiscount) {
+        maxDiscount = discount;
+        bestCoupon = coupon;
+      }
+    }
+
+    res.json({
+      bestCoupon,
+      discount: maxDiscount,
+      finalPrice: totalPrice - maxDiscount
+    });
+  } catch (error) {
+    console.error('Calculate best coupon error:', error);
+    res.status(500).json({ message: '최적 쿠폰 계산 중 오류가 발생했습니다.' });
+  }
+});
+
 module.exports = router;
