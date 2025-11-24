@@ -146,7 +146,7 @@ export default function Footer() {
               </li>
               <li className="flex items-center space-x-3">
                 <FaPhone className="text-sage-400 flex-shrink-0" />
-                <span className="text-gray-300 text-sm">010-1234-5678</span>
+                <span className="text-gray-300 text-sm"></span>
               </li>
               <li className="flex items-center space-x-3">
                 <FaEnvelope className="text-sage-400 flex-shrink-0" />
