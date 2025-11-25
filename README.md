@@ -1,3 +1,5 @@
+*팀장이 혼자 만들어본 프로그램입니다*
+
 # 🏨 HotelHub
 
 > 스마트한 호텔 예약 플랫폼
@@ -349,17 +351,10 @@ vercel --prod
 
 This project is licensed under the MIT License.
 
-## 👥 팀
-
-- **Backend Developer**: [Your Name]
-- **Frontend Developer**: [Your Name]
-- **UI/UX Designer**: [Your Name]
-- **Project Manager**: [Your Name]
 
 ## 📧 문의
 
-- **Email**: dev@hotelhub.com
-- **GitHub Issues**: [이슈 페이지](https://github.com/HotelHub-Team-Project/HotelHub-Team-Project/issues)
+- **Email**: happysun0142@gmail.com
 
 ## 🙏 감사의 글
 
@@ -368,9 +363,5 @@ This project is licensed under the MIT License.
 - [MongoDB](https://www.mongodb.com/)
 - [Toss Payments](https://www.tosspayments.com/)
 - [Tailwind CSS](https://tailwindcss.com/)
-
----
-
-⭐ 이 프로젝트가 도움이 되셨다면 Star를 눌러주세요!
 
 **Last Updated**: 2025년 11월 25일
