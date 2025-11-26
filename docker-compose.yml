@@ -1,0 +1,87 @@
+version: '3.8'
+
+services:
+  # MongoDB 데이터베이스 (로컬 개발용 - MongoDB Atlas 사용 시 주석 처리)
+  # mongodb:
+  #   image: mongo:7.0
+  #   container_name: hotelhub-mongodb
+  #   restart: unless-stopped
+  #   ports:
+  #     - "27017:27017"
+  #   environment:
+  #     MONGO_INITDB_ROOT_USERNAME: admin
+  #     MONGO_INITDB_ROOT_PASSWORD: password123
+  #     MONGO_INITDB_DATABASE: hotelhub
+  #   volumes:
+  #     - mongodb_data:/data/db
+  #     - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+  #   networks:
+  #     - hotelhub-network
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: hotelhub-backend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - MONGO_URI=mongodb+srv://admin:1234@cluster0.lfpc3z8.mongodb.net/?appName=Cluster0
+      - FRONT_ORIGIN=http://localhost:80
+      - JWT_SECRET=P31FWhSKXmoqIbxC85TanzLGgjyEZ9D46HupOv2RtJAlkM7Y0VweNUrcQBfdsi
+      - JWT_EXPIRE=7d
+      - TOSS_SECRET_KEY=test_sk_jExPeJWYVQ5Z7YP0ZRqQV49R5gvN
+      - TOSS_SECURITY_KEY=84c402544ea7443306ecc3f4389cec54d98f6f7b8788019e6a1dcaff1d2dd7fa
+      - TOSS_CLIENT_KEY=test_ck_E92LAa5PVbwxd7X5YxNZr7YmpXyJ
+      - KAKAO_CLIENT_ID=6e2585121c731501f753bcb14641fad1
+      - KAKAO_CLIENT_SECRET=VzhxvCnVSiURwoemiOwqRULmYzM0viap
+      - KAKAO_REDIRECT_URI=http://localhost:3000/api/auth/kakao/callback
+      - AWS_REGION=ap-northeast-2
+      - S3_BUCKET=hotel-bucket-teamproject
+      - AWS_ACCESS_KEY_ID=AKIAQQNOG4ERW25H5OXJ
+      - AWS_SECRET_ACCESS_KEY=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
+      - VITE_S3_PUBLIC_BASE=https://hotel-bucket-teamproject.s3.ap-northeast-2.amazonaws.com
+      - EMAIL_HOST=smtp.gmail.com
+      - EMAIL_PORT=587
+      - EMAIL_USER=${EMAIL_USER}
+      - EMAIL_PASS=${EMAIL_PASS}
+      - CARD_ENCRYPT_KEY=P31FWhSKXmoqIbxC85TanzLGgjyEZ9D46HupOv2RtJAlkM7Y0VweNUrcQBfdsi
+    # depends_on:
+    #   - mongodb
+    networks:
+      - hotelhub-network
+    volumes:
+      - ./backend/uploads:/app/uploads
+
+  # Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=http://localhost:3000
+        - VITE_API_BASE_URL=http://localhost:3000/api
+        - VITE_TOSS_CLIENT_KEY=test_ck_E92LAa5PVbwxd7X5YxNZr7YmpXyJ
+        - VITE_KAKAO_REST_API_KEY=6e2585121c731501f753bcb14641fad1
+        - VITE_KAKAO_REDIRECT_URI=http://localhost/auth/kakao/callback
+        - VITE_KAKAO_MAP_KEY=23407ddda3460fcdad2d3c8903378e07
+    container_name: hotelhub-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - hotelhub-network
+
+volumes:
+  mongodb_data:
+    driver: local
+
+networks:
+  hotelhub-network:
+    driver: bridge

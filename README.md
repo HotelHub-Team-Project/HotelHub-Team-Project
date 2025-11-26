@@ -325,18 +325,282 @@ npm test
 
 ## 📦 배포
 
-### 백엔드 배포 (예: Heroku)
+### 🐳 Docker Desktop으로 배포하기
+
+HotelHub은 Docker를 사용하여 쉽게 배포할 수 있습니다. MongoDB, Backend, Frontend가 모두 컨테이너로 실행됩니다.
+
+#### 사전 요구사항
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) 설치
+- [Warp](https://www.warp.dev/) 또는 다른 터미널 설치 (선택사항)
+
+#### 1단계: 환경 변수 설정
+
+프로젝트 루트에 `.env` 파일을 생성합니다:
+
+```bash
+# .env.example 파일을 복사하여 .env 파일 생성
+cp .env.example .env
+```
+
+`.env` 파일을 열어 실제 값으로 수정:
+
+```env
+# JWT Secret (랜덤한 긴 문자열 생성 권장)
+JWT_SECRET=your_super_secret_jwt_key_change_this_in_production
+
+# Toss Payments (실제 키로 변경)
+TOSS_CLIENT_KEY=your_toss_client_key
+TOSS_SECRET_KEY=your_toss_secret_key
+
+# Email 설정
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USER=your_email@gmail.com
+EMAIL_PASS=your_app_password
+
+# 카드 암호화 키 (32자 이상)
+CARD_ENCRYPT_KEY=your_32_character_encryption_key_here
+```
+
+#### 2단계: Docker Desktop 실행
+
+1. Docker Desktop을 실행합니다
+2. Docker가 정상적으로 실행 중인지 확인:
+
+```bash
+docker --version
+docker-compose --version
+```
+
+#### 3단계: Docker Compose로 전체 스택 실행
+
+**Warp CMD (또는 다른 터미널)에서 실행:**
+
+```bash
+# 프로젝트 루트 디렉토리로 이동
+cd C:/HotelHub-Team-Project
+
+# Docker 이미지 빌드 및 컨테이너 실행
+docker-compose up -d --build
+```
+
+이 명령은 다음을 실행합니다:
+- ✅ MongoDB 컨테이너 시작 (포트 27017)
+- ✅ Backend API 빌드 및 실행 (포트 3000)
+- ✅ Frontend 빌드 및 실행 (포트 80)
+
+#### 4단계: 애플리케이션 확인
+
+```bash
+# 실행 중인 컨테이너 확인
+docker-compose ps
+
+# 로그 확인
+docker-compose logs -f
+
+# 특정 서비스 로그만 확인
+docker-compose logs -f backend
+docker-compose logs -f frontend
+```
+
+브라우저에서 접속:
+- **Frontend**: http://localhost
+- **Backend API**: http://localhost:3000/api
+- **MongoDB**: mongodb://localhost:27017
+
+#### 5단계: 컨테이너 관리
+
+```bash
+# 컨테이너 중지
+docker-compose stop
+
+# 컨테이너 시작 (이미 빌드된 경우)
+docker-compose start
+
+# 컨테이너 재시작
+docker-compose restart
+
+# 컨테이너 중지 및 제거
+docker-compose down
+
+# 컨테이너, 볼륨, 이미지 모두 제거
+docker-compose down -v --rmi all
+```
+
+#### 6단계: Docker Desktop에서 확인
+
+Docker Desktop GUI에서:
+1. **Containers** 탭: 실행 중인 컨테이너 확인
+2. **Images** 탭: 빌드된 이미지 확인
+3. **Volumes** 탭: MongoDB 데이터 볼륨 확인
+
+### 🔧 개별 서비스 Docker 실행
+
+#### Backend만 실행
+```bash
+cd backend
+docker build -t hotelhub-backend .
+docker run -p 3000:3000 --env-file ../.env hotelhub-backend
+```
+
+#### Frontend만 실행
+```bash
+cd frontend
+docker build -t hotelhub-frontend .
+docker run -p 80:80 hotelhub-frontend
+```
+
+#### MongoDB만 실행
+```bash
+docker run -d \
+  --name hotelhub-mongodb \
+  -p 27017:27017 \
+  -e MONGO_INITDB_ROOT_USERNAME=admin \
+  -e MONGO_INITDB_ROOT_PASSWORD=password123 \
+  -v mongodb_data:/data/db \
+  mongo:7.0
+```
+
+### 🚀 프로덕션 배포
+
+#### AWS, GCP, Azure 등에 배포
+
+1. **Docker Hub에 이미지 푸시**
+
+```bash
+# Docker Hub 로그인
+docker login
+
+# 이미지 태그
+docker tag hotelhub-backend:latest your-username/hotelhub-backend:latest
+docker tag hotelhub-frontend:latest your-username/hotelhub-frontend:latest
+
+# 이미지 푸시
+docker push your-username/hotelhub-backend:latest
+docker push your-username/hotelhub-frontend:latest
+```
+
+2. **서버에서 실행**
+
+```bash
+# 서버에서 이미지 pull
+docker pull your-username/hotelhub-backend:latest
+docker pull your-username/hotelhub-frontend:latest
+
+# docker-compose.yml 수정 (이미지 사용)
+docker-compose -f docker-compose.prod.yml up -d
+```
+
+#### Kubernetes 배포 (선택사항)
+
+```bash
+# 이미지 빌드
+docker-compose build
+
+# Kubernetes 배포 파일 생성
+kubectl apply -f k8s/
+
+# 서비스 확인
+kubectl get pods
+kubectl get services
+```
+
+### 📊 모니터링 및 로그
+
+```bash
+# 실시간 로그 확인
+docker-compose logs -f
+
+# 특정 서비스 로그
+docker-compose logs -f backend
+
+# 최근 100줄 로그
+docker-compose logs --tail=100
+
+# 컨테이너 상태 확인
+docker-compose ps
+
+# 리소스 사용량 확인
+docker stats
+```
+
+### 🔄 업데이트 및 재배포
+
+코드 변경 후:
+
+```bash
+# 변경사항 반영하여 재빌드
+docker-compose up -d --build
+
+# 특정 서비스만 재빌드
+docker-compose up -d --build backend
+```
+
+### 🛠️ 트러블슈팅
+
+#### 포트 충돌
+```bash
+# 포트 사용 중인 프로세스 확인 (Windows)
+netstat -ano | findstr :3000
+netstat -ano | findstr :80
+
+# 프로세스 종료
+taskkill /PID <PID> /F
+```
+
+#### 컨테이너 재시작
+```bash
+# 모든 컨테이너 재시작
+docker-compose restart
+
+# 특정 컨테이너만 재시작
+docker-compose restart backend
+```
+
+#### 캐시 문제
+```bash
+# 캐시 없이 재빌드
+docker-compose build --no-cache
+
+# 모든 것 제거 후 새로 시작
+docker-compose down -v
+docker-compose up -d --build
+```
+
+#### MongoDB 데이터 초기화
+```bash
+# 볼륨 포함 모두 제거
+docker-compose down -v
+
+# 다시 시작
+docker-compose up -d
+```
+
+### 기타 배포 옵션
+
+#### 백엔드 배포 (Heroku)
 ```bash
 heroku create hotelhub-api
 git push heroku main
 heroku config:set NODE_ENV=production
 ```
 
-### 프론트엔드 배포 (예: Vercel)
+#### 프론트엔드 배포 (Vercel)
 ```bash
 cd frontend
 npm run build
 vercel --prod
+```
+
+#### 백엔드 배포 (Railway)
+```bash
+# Railway CLI 설치
+npm install -g @railway/cli
+
+# 프로젝트 생성 및 배포
+railway login
+railway init
+railway up
 ```
 
 ## 🤝 기여하기
