@@ -29,6 +29,30 @@ export default function BusinessDashboard() {
     }
   };
 
+  // 차트 데이터 생성
+  const chartData = {
+    monthlyRevenue: [
+      { label: '1월', value: 450000 },
+      { label: '2월', value: 520000 },
+      { label: '3월', value: 480000 },
+      { label: '4월', value: 620000 },
+      { label: '5월', value: 580000 },
+      { label: '6월', value: 650000 }
+    ],
+    monthlyBookings: [
+      { label: '1월', value: 45 },
+      { label: '2월', value: 52 },
+      { label: '3월', value: 48 },
+      { label: '4월', value: 62 },
+      { label: '5월', value: 58 },
+      { label: '6월', value: 65 }
+    ],
+    roomOccupancy: [
+      { label: '예약됨', value: stats?.occupiedRooms || 45, color: '#4F46E5' },
+      { label: '가능', value: stats?.availableRooms || 55, color: '#10B981' }
+    ]
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
