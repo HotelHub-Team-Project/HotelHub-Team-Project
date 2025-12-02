@@ -34,6 +34,54 @@ const hotelImages = {
     'https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=800',
     'https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=800',
     'https://images.unsplash.com/photo-1601395605596-f0a7f0d36e15?w=800'
+  ],
+  daegu: [
+    'https://images.unsplash.com/photo-1559599101-f09722fb4948?w=800',
+    'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800',
+    'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=800',
+    'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800'
+  ],
+  gwangju: [
+    'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800',
+    'https://images.unsplash.com/photo-1496417263034-38ec4f0b665a?w=800',
+    'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800',
+    'https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=800'
+  ],
+  daejeon: [
+    'https://images.unsplash.com/photo-1445019980597-93fa8acb246c?w=800',
+    'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800',
+    'https://images.unsplash.com/photo-1584132967334-10e028bd69f7?w=800',
+    'https://images.unsplash.com/photo-1561501900-3701fa6a0864?w=800'
+  ],
+  gangneung: [
+    'https://images.unsplash.com/photo-1540541338287-41700207dee6?w=800',
+    'https://images.unsplash.com/photo-1455587734955-081b22074882?w=800',
+    'https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=800',
+    'https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=800'
+  ],
+  sokcho: [
+    'https://images.unsplash.com/photo-1601395605596-f0a7f0d36e15?w=800',
+    'https://images.unsplash.com/photo-1559599101-f09722fb4948?w=800',
+    'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800',
+    'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=800'
+  ],
+  yeosu: [
+    'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800',
+    'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800',
+    'https://images.unsplash.com/photo-1496417263034-38ec4f0b665a?w=800',
+    'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800'
+  ],
+  gyeongju: [
+    'https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=800',
+    'https://images.unsplash.com/photo-1445019980597-93fa8acb246c?w=800',
+    'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800',
+    'https://images.unsplash.com/photo-1584132967334-10e028bd69f7?w=800'
+  ],
+  jeonju: [
+    'https://images.unsplash.com/photo-1561501900-3701fa6a0864?w=800',
+    'https://images.unsplash.com/photo-1540541338287-41700207dee6?w=800',
+    'https://images.unsplash.com/photo-1455587734955-081b22074882?w=800',
+    'https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=800'
   ]
 };
 
@@ -118,10 +166,42 @@ const seedUsers = async () => {
       businessStatus: 'approved'
     },
     {
+      email: 'business4@hotel.com',
+      password: 'business123',
+      name: '대구호텔네트워크',
+      phone: '010-4444-4444',
+      role: 'business',
+      businessStatus: 'approved'
+    },
+    {
+      email: 'business5@hotel.com',
+      password: 'business123',
+      name: '광주호스피탈리티',
+      phone: '010-5555-5555',
+      role: 'business',
+      businessStatus: 'approved'
+    },
+    {
+      email: 'business6@hotel.com',
+      password: 'business123',
+      name: '강원도리조트',
+      phone: '010-6666-6666',
+      role: 'business',
+      businessStatus: 'approved'
+    },
+    {
+      email: 'business7@hotel.com',
+      password: 'business123',
+      name: '전라도여행',
+      phone: '010-7777-7777',
+      role: 'business',
+      businessStatus: 'approved'
+    },
+    {
       email: 'test2@gmail.com',
       password: '123456',
       name: '김철수',
-      phone: '010-4444-4444',
+      phone: '010-8888-8888',
       role: 'user',
       points: 10000
     },
@@ -129,7 +209,7 @@ const seedUsers = async () => {
       email: 'user2@test.com',
       password: 'user123',
       name: '이영희',
-      phone: '010-5555-5555',
+      phone: '010-9999-9999',
       role: 'user',
       points: 5000
     }
